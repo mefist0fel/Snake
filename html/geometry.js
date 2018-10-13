@@ -54,12 +54,6 @@ function CreateRotationMatrix3(axeVector, angle) { // axe vector must be unit
 	]
 }
 
-// function CreateEulerMatrix(x, y, z) {
-//	return [
-//		Math.cos(x) * Math.cos(z) - Math.sin(x) * Math.cos(y) * Math.sin(z),// 
-//	]
-//}
-
 function MultiplyMatrix3(ma, mb) {
 	return [
 		ma[0] * mb[0] + ma[1] * mb[3] + ma[2] * mb[6],  ma[0] * mb[1] + ma[1] * mb[4] + ma[2] * mb[7],  ma[0] * mb[2] + ma[1] * mb[5] + ma[2] * mb[8],
@@ -76,33 +70,73 @@ function MultiplyVector3ToMatrix3(v, m) {
 	]
 }
 
+// Matrix 4 * 4 functions
+function CreateUnitMatrix4() {
+	return [         //  ids
+		1, 0, 0, 0,  //  0  1  2  3
+		0, 1, 0, 0,  //  4  5  6  7
+		0, 0, 1, 0,  //  8  9 10 11
+		0, 0, 0, 1   // 12 13 14 15
+	]
+}
 
-// basic vector2[x, y] functons
-function vAdd(av, bv) {
-	return [av[0] + bv[0], av[1] + bv[1],  av[2] + bv[2]];
+function CreateMatrix4(positionVector3, scale = 1.0) {
+	var x = positionVector3[0]
+	var y = positionVector3[1]
+	var z = positionVector3[2]
+	var s = scale
+	return [
+		s, 0, 0, 0,
+		0, s, 0, 0,
+		0, 0, s, 0,
+		x, y, z, 1
+	]
 }
-function vSub(av, bv) {
-	return [av[0] - bv[0], av[1] - bv[1], av[2] - bv[2]];
+
+function MultiplyVector3ToMatrix4(v, m) {
+	return [
+		v[0] * m[ 0] + v[1] * m[ 4] + v[2] * m[ 8] + 1.0 * m[12],
+		v[0] * m[ 1] + v[1] * m[ 5] + v[2] * m[ 9] + 1.0 * m[13],
+		v[0] * m[ 2] + v[1] * m[ 6] + v[2] * m[10] + 1.0 * m[14]
+	]
 }
-function magnitude(va, vb) {
-	return Math.sqrt((va[0] - vb[0]) * (va[0] - vb[0]) + (va[1] - vb[1]) * (va[1] - vb[1]));
+
+function CreateProjectionMatrix4(topY = 100.0, rightX = 100.0, nearZ = 1.0, farZ = 100.0) {
+	// http://www.songho.ca/opengl/gl_projectionmatrix.html
+	var n = nearZ
+	var f = farZ
+	var t = topY
+	var r = rightX
+	var g = -(f + n) / (f - n)
+	var h = (-2.0 * f * n) / (f - n)
+	return [
+		n/r,   0,   0,   0,
+		  0, n/t,   0,   0,
+		  0,   0,   g,   h,
+		  0,   0,  -1,   1
+	]
 }
-function vNorm(v) { // normilize
-	var dist = 1 / magnitude(v, [0, 0, 0]);
-	if (dist <= 0) {
-		dist = 0.0000000001;
-	}
-	if (dist == Infinity) {
-		dist = Number.MAX_VALUE;
-	}
-	if (dist == -Infinity) {
-		dist = Number.MIN_VALUE;
-	}
-	return vMult(v, dist);
-}
-function vMult(v, m) { // m - float
-	return [v[0] * m, v[1] * m, v[2] * m];
-}
-function vInRect(v, rect) { // rect is arr[4] description of AABB rect
-	return (v[0] >= rect[0] && v[0] <= rect[2] && v[1] >= rect[1] && v[1] <= rect[3]);
+
+function MultiplyMatrix4(ma, mb) {
+	return [
+		ma[ 0] * mb[ 0] + ma[ 1] * mb[ 4] + ma[ 2] * mb[ 8]  + ma[ 3] * mb[12],
+		ma[ 0] * mb[ 1] + ma[ 1] * mb[ 5] + ma[ 2] * mb[ 9]  + ma[ 3] * mb[13],
+		ma[ 0] * mb[ 2] + ma[ 1] * mb[ 6] + ma[ 2] * mb[10]  + ma[ 3] * mb[14],
+		ma[ 0] * mb[ 3] + ma[ 1] * mb[ 7] + ma[ 2] * mb[11]  + ma[ 3] * mb[15],
+
+		ma[ 4] * mb[ 0] + ma[ 5] * mb[ 4] + ma[ 6] * mb[ 8]  + ma[ 7] * mb[12],
+		ma[ 4] * mb[ 1] + ma[ 5] * mb[ 5] + ma[ 6] * mb[ 9]  + ma[ 7] * mb[13],
+		ma[ 4] * mb[ 2] + ma[ 5] * mb[ 6] + ma[ 6] * mb[10]  + ma[ 7] * mb[14],
+		ma[ 4] * mb[ 3] + ma[ 5] * mb[ 7] + ma[ 6] * mb[11]  + ma[ 7] * mb[15],
+
+		ma[ 8] * mb[ 0] + ma[ 9] * mb[ 4] + ma[10] * mb[ 8]  + ma[11] * mb[12],
+		ma[ 8] * mb[ 1] + ma[ 9] * mb[ 5] + ma[10] * mb[ 9]  + ma[11] * mb[13],
+		ma[ 8] * mb[ 2] + ma[ 9] * mb[ 6] + ma[10] * mb[10]  + ma[11] * mb[14],
+		ma[ 8] * mb[ 3] + ma[ 9] * mb[ 7] + ma[10] * mb[11]  + ma[11] * mb[15],
+
+		ma[12] * mb[ 0] + ma[13] * mb[ 4] + ma[14] * mb[ 8]  + ma[15] * mb[12],
+		ma[12] * mb[ 1] + ma[13] * mb[ 5] + ma[14] * mb[ 9]  + ma[15] * mb[13],
+		ma[12] * mb[ 2] + ma[13] * mb[ 6] + ma[14] * mb[10]  + ma[15] * mb[14],
+		ma[12] * mb[ 3] + ma[13] * mb[ 7] + ma[14] * mb[11]  + ma[15] * mb[15]
+	]
 }
