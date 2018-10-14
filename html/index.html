@@ -22,11 +22,11 @@
 	<script type="text/javascript" src="input.js"></script>
 	<script type="text/javascript" src="geometry.js"></script>
 	<script type="text/javascript" src="camera.js"></script>
+	<script type="text/javascript" src="object3d.js"></script>
 	<!--
 	<script type="text/javascript" src="jsfxr.js"></script>
 	<script type="text/javascript" src="audio.js"></script>
-	<script type="text/javascript" src="map.js"></script>
-	<script type="text/javascript" src="hero.js"></script>-->
+	<script type="text/javascript" src="map.js"></script>-->
 	<script type="text/javascript">
 	let now,
 		dt = 0,
@@ -44,20 +44,36 @@
 
 	let camera = new Camera(width, height)
 
-	let points = []
+	let objects = []
 
 	let size = 5;
 	for (let i = -size; i <= size; i++) {
 		for (let j = -size; j <= size; j++) {
-			points.push(CreateVector3( i, j, size))
-			points.push(CreateVector3( i, j,-size))
-			points.push(CreateVector3( i, size, j))
-			points.push(CreateVector3( i,-size, j))
-			points.push(CreateVector3( size, i, j))
-			points.push(CreateVector3(-size, i, j))
+			objects.push(createObject( i, j, size))
+			objects.push(createObject( i, j,-size))
+			objects.push(createObject( i, size, j))
+			objects.push(createObject( i,-size, j))
+			objects.push(createObject( size, i, j))
+			objects.push(createObject(-size, i, j))
 		}
 	}
 
+	function createObject(x, y, z) {
+		let position = CreateVector3(x, y, z)
+		var r = parseInt((x + 5) * 255 / 10)
+		var g = parseInt((y + 5) * 255 / 10)
+		var b = parseInt((z + 5) * 255 / 10)
+		let color = rgbToHex(r, g, b)
+		return new Object3D(position, color)
+	}
+
+	function rgbToHex(r, g, b) {
+		function componentToHex(c) {
+			var hex = c.toString(16);
+			return hex.length == 1 ? "0" + hex : hex;
+		}
+		return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+	}
 
 	// init
 	let canvasElement = document.getElementById('snake')
@@ -77,13 +93,13 @@
 		canvas.fillStyle = '#000011'
 		canvas.fillRect ( 0, 0, width, height)
 
-		canvas.fillStyle = '#FFEEEE'
-		for (let i = 0; i < points.length; i++) {
-			let position = camera.WorldToScreenVector3(points[i])
-			canvas.beginPath()
-			canvas.arc(position[0], position[1], 3, 0, 2.0 * Math.PI)
-			canvas.closePath()
-			canvas.fill()
+		// canvas.fillStyle = '#FFEEEE'
+		for (let i = 0; i < objects.length; i++) {
+			objects[i].prepareScene(camera)
+		}
+		objects.sort(object3DDepthComparator)
+		for (let i = 0; i < objects.length; i++) {
+			objects[i].draw(canvas)
 		}
 
 
@@ -109,23 +125,18 @@
 		// space = 32
 		let speed = 60.0 * dt
 		if (input.key[38] || input.key[87]) { // UP
-			// worldMatrix = MultiplyMatrix3(worldMatrix, CreateRotationMatrix(rightVector, speed))
 			y -= speed
 		}
 		if (input.key[40] || input.key[83]) { // DOWN
-			//worldMatrix = MultiplyMatrix3(worldMatrix, CreateRotationMatrix(rightVector, -speed))
 			y += speed
 		}
 		if (input.key[37] || input.key[65]) { // LEFT
-			// worldMatrix = MultiplyMatrix3(worldMatrix, CreateRotationMatrix(upVector, speed))
 			x -= speed
 		}
 		if (input.key[39] || input.key[68]) { // RIGHT
-			//worldMatrix = MultiplyMatrix3(worldMatrix, CreateRotationMatrix(upVector, -speed))
 			x += speed
 		}
 		//worldMatrix = CreateEulerMatrix3(x, 0, 0.0) // MultiplyMatrix3(CreateRotationMatrix3(upVector, x), CreateRotationMatrix3(rightVector, y))
-		worldMatrix = MultiplyMatrix3(CreateMatrix3RotatedX(y), CreateMatrix3RotatedY(x))
 		camera.worldMatrix = MultiplyMatrix3(CreateMatrix3RotatedX(y), CreateMatrix3RotatedY(x))
 		if (input.key[32]) { // space
 		}
