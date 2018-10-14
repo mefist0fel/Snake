@@ -43,7 +43,7 @@
 	var rightVector = CreateVector3(1, 0)
 
 	var worldMatrix = CreateUnitMatrix3()
-	var projectionMatrix = CreateProjectionMatrix4(0.5, 0.5, 0.1, 1.0)
+	var projectionMatrix = CreateProjectionMatrix4(10.0, 10.0, 0.1, 20.0)
 	var points = []
 
 	for (var i = -5; i <= 5; i++) {
@@ -72,9 +72,15 @@
 	}
 
 	function ToWorldPoint(point) {
-		var worldPoint = MultiplyVector3ToMatrix3(point, worldMatrix)
-		var screenPoint = MultiplyVector3ToMatrix4(worldPoint, projectionMatrix)
-		var screenScaledPoint = MultiplyVector3(screenPoint, 100.0)
+		//var projectionViewMatrix = MultiplyMatrix4(projectionMatrix, CreateMatrix4FromMatrix3(worldMatrix))
+		//var screenPoint = MultiplyVector3ToMatrix4(point, projectionViewMatrix)
+		//var screenScaledPoint = MultiplyVector3(screenPoint, 10000.0)
+		//return AddVector3(screenScaledPoint, centerOffcet)
+		var worldPoint = point
+		worldPoint = MultiplyVector3ToMatrix3(worldPoint, worldMatrix)
+		worldPoint = AddVector3(worldPoint, CreateVector3(0.0, 0.0, -20.0))
+		worldPoint = MultiplyVector3ToMatrix4(worldPoint, projectionMatrix)
+		var screenScaledPoint = MultiplyVector3(worldPoint, 200.0)
 		return AddVector3(screenScaledPoint, centerOffcet)
 	}
 
@@ -137,7 +143,8 @@
 			//worldMatrix = MultiplyMatrix3(worldMatrix, CreateRotationMatrix(upVector, -speed))
 			x += speed;
 		}
-		worldMatrix = MultiplyMatrix3(CreateRotationMatrix3(rightVector, y), CreateRotationMatrix3(upVector, x))
+		//worldMatrix = CreateEulerMatrix3(x, 0, 0.0) // MultiplyMatrix3(CreateRotationMatrix3(upVector, x), CreateRotationMatrix3(rightVector, y))
+		worldMatrix = MultiplyMatrix3(CreateMatrix3RotatedX(y), CreateMatrix3RotatedY(x))
 		if (input.key[32]) { // space
 		}
 	}

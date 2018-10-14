@@ -20,7 +20,7 @@ function Vector3Length(v) {
 }
 
 function NormalizeVector3(v) {
-	var dist = 1.0 / Vector2Length(v);
+	var dist = 1.0 / Vector3Length(v);
 	if (dist == Infinity) {
 		dist = Number.MAX_VALUE;
 	}
@@ -39,7 +39,61 @@ function CreateUnitMatrix3() {
 	]
 }
 
-function CreateRotationMatrix3(axeVector, angle) { // axe vector must be unit
+function CreateMatrix3RotatedX(angle = 0.0) {
+	// angles in radians
+	var a = angle / 180.0 * Math.PI
+	var ca = Math.cos(a)
+	var sa = Math.sin(a)
+	return [
+		1,  0,  0,
+		0, ca,-sa,
+		0, sa, ca
+	]
+}
+
+function CreateMatrix3RotatedY(angle = 0.0) {
+	// angles in radians
+	var a = angle / 180.0 * Math.PI
+	var ca = Math.cos(a)
+	var sa = Math.sin(a)
+	return [
+		 ca,  0, sa,
+		  0,  1,  0,
+		-sa,  0, ca
+	]
+}
+
+function CreateMatrix3RotatedZ(angle = 0.0) {
+	// angles in radians
+	var a = angle / 180.0 * Math.PI
+	var ca = Math.cos(a)
+	var sa = Math.sin(a)
+	return [
+		 ca,-sa, 0,
+		 sa, ca, 0,
+		  0,  0, 1
+	]
+}
+
+function CreateEulerMatrix3(xAngle = 0.0, yAngle = 0.0, zAngle = 0.0) {
+	// angles in radians
+	var a = xAngle / 180.0 * Math.PI
+	var b = yAngle / 180.0 * Math.PI
+	var y = zAngle / 180.0 * Math.PI
+	var ca = Math.cos(a)
+	var cb = Math.cos(b)
+	var cy = Math.cos(y)
+	var sa = Math.sin(a)
+	var sb = Math.sin(b)
+	var sy = Math.sin(y)
+	return [
+		ca * cy - sa * sb * cy,  -ca * sy - sa * cb * cy,  sa * sb,
+		sa * cy + ca * cb * sy,  -sa * sy + ca * cb * cy, -ca * sb,
+		               sb * sy,                  sb * cy,       cb
+	]
+}
+
+function CreateRotationMatrix3(axeVector, angle) { // axe vector must be unit // TODO - it WRONG! Rework
 	var x = axeVector[0]
 	var y = axeVector[1]
 	var z = axeVector[2]
@@ -63,6 +117,11 @@ function MultiplyMatrix3(ma, mb) {
 }
 
 function MultiplyVector3ToMatrix3(v, m) {
+	//return [
+	//	v[0] * m[0] + v[1] * m[3] + v[2] * m[6],
+	//	v[0] * m[1] + v[1] * m[4] + v[2] * m[7],
+	//	v[0] * m[2] + v[1] * m[5] + v[2] * m[8]
+	//]
 	return [
 		v[0] * m[0] + v[1] * m[1] + v[2] * m[2],
 		v[0] * m[3] + v[1] * m[4] + v[2] * m[5],
@@ -77,6 +136,14 @@ function CreateUnitMatrix4() {
 		0, 1, 0, 0,  //  4  5  6  7
 		0, 0, 1, 0,  //  8  9 10 11
 		0, 0, 0, 1   // 12 13 14 15
+	]
+}
+function CreateMatrix4FromMatrix3(m) {
+	return [         //  ids
+		m[0], m[1], m[2],    0,  //  0  1  2  3
+		m[3], m[4], m[5],    0,  //  4  5  6  7
+		m[6], m[7], m[8],    0,  //  8  9 10 11
+		   0,    0,    0,    1   // 12 13 14 15
 	]
 }
 
@@ -94,11 +161,28 @@ function CreateMatrix4(positionVector3, scale = 1.0) {
 }
 
 function MultiplyVector3ToMatrix4(v, m) {
+	var vec4 = [v[0], v[1], v[2], 1.0]
+	var res = MultiplyVector4ToMatrix4(vec4, m)
 	return [
-		v[0] * m[ 0] + v[1] * m[ 4] + v[2] * m[ 8] + 1.0 * m[12],
-		v[0] * m[ 1] + v[1] * m[ 5] + v[2] * m[ 9] + 1.0 * m[13],
-		v[0] * m[ 2] + v[1] * m[ 6] + v[2] * m[10] + 1.0 * m[14]
+		res[0] * res[3],
+		res[1] * res[3],
+		res[2] * res[3]
 	]
+}
+
+function MultiplyVector4ToMatrix4(v, m) {
+	return [
+		v[0] * m[ 0] + v[1] * m[ 4] + v[2] * m[ 8] + v[3] * m[12],
+		v[0] * m[ 1] + v[1] * m[ 5] + v[2] * m[ 9] + v[3] * m[13],
+		v[0] * m[ 2] + v[1] * m[ 6] + v[2] * m[10] + v[3] * m[14],
+		v[0] * m[ 3] + v[1] * m[ 7] + v[2] * m[11] + v[3] * m[15]
+	]
+	// return [
+	// 	v[0] * m[ 0] + v[1] * m[ 1] + v[2] * m[ 2] + v[3] * m[ 3],
+	// 	v[0] * m[ 4] + v[1] * m[ 5] + v[2] * m[ 6] + v[3] * m[ 7],
+	// 	v[0] * m[ 8] + v[1] * m[ 9] + v[2] * m[10] + v[3] * m[11],
+	// 	v[0] * m[12] + v[1] * m[13] + v[2] * m[14] + v[3] * m[15]
+	// ]
 }
 
 function CreateProjectionMatrix4(topY = 100.0, rightX = 100.0, nearZ = 1.0, farZ = 100.0) {
@@ -107,13 +191,13 @@ function CreateProjectionMatrix4(topY = 100.0, rightX = 100.0, nearZ = 1.0, farZ
 	var f = farZ
 	var t = topY
 	var r = rightX
-	var g = -(f + n) / (f - n)
+	var g = (f + n) / (f - n)
 	var h = (-2.0 * f * n) / (f - n)
 	return [
 		n/r,   0,   0,   0,
 		  0, n/t,   0,   0,
-		  0,   0,   g,   h,
-		  0,   0,  -1,   1
+		  0,   0,   g,   1,
+		  0,   0,   h,   0
 	]
 }
 
