@@ -1,3 +1,53 @@
+// vector 2 functions
+function CreateVector2(x = 0.0, y = 0.0) {
+	return [x, y,]
+}
+
+function AddVector2(a, b) {
+	return [a[0] + b[0], a[1] + b[1]]
+}
+
+function SubstractVector2(a, b) {
+	return [a[0] - b[0], a[1] - b[1]]
+}
+
+function MultiplyVector2(v, multiplier) {
+	return [v[0] * multiplier, v[1] * multiplier]
+}
+
+function Vector2Length(v) {
+	return Math.sqrt(v[0] * v[0] + v[1] * v[1])
+}
+
+function NormalizeVector2(v) {
+	var dist = 1.0 / Vector2Length(v);
+	if (dist == Infinity) {
+		dist = Number.MAX_VALUE;
+	}
+	if (dist == -Infinity) {
+		dist = Number.MIN_VALUE;
+	}
+	return MultiplyVector2(v, dist);
+}
+
+function DotProductVector2(a, b) {
+	return a[0] * b[0] + a[1] * b[1];
+}
+
+function DistanceToLineDistance(lineStart, lineEnd, point) {
+	let lineDirection = SubstractVector2(lineEnd, lineStart)
+	let perpendicular = [lineDirection[1], -lineDirection[0]]
+	let pointDirection = SubstractVector2(lineStart, point)
+	return Math.abs(DotProductVector2(NormalizeVector2(perpendicular), pointDirection))
+}
+
+function PointToLine(lineStart, lineEnd, point) {
+	let lineDirection = SubstractVector2(lineEnd, lineStart)
+	let perpendicular = [lineDirection[1], -lineDirection[0]]
+	let pointDirection = SubstractVector2(lineStart, point)
+	return DotProductVector2(NormalizeVector2(perpendicular), pointDirection)
+}
+
 // vector 3 functions
 function CreateVector3(x = 0.0, y = 0.0, z = 0.0) {
 	return [x, y, z]

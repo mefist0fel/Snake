@@ -47,16 +47,66 @@
 	let objects = []
 
 	let size = 5;
-	for (let i = -size; i <= size; i++) {
-		for (let j = -size; j <= size; j++) {
-			objects.push(createObject( i, j, size))
-			objects.push(createObject( i, j,-size))
-			objects.push(createObject( i, size, j))
-			objects.push(createObject( i,-size, j))
-			objects.push(createObject( size, i, j))
-			objects.push(createObject(-size, i, j))
+	//cube
+	for (let i = -size; i < size; i++) {
+	 	for (let j = -size; j < size; j++) {
+			let color = '#FFFFFF'
+			if ((parseInt(size + i * 0.5 + 0.5) + parseInt(size + j * 0.5 + 0.5)) % 2 == 1)
+				color = '#666666'
+			// forw
+			let af = CreateVector3( i    , j    , size)
+			let bf = CreateVector3( i + 1, j    , size)
+			let cf = CreateVector3( i + 1, j + 1, size)
+			let df = CreateVector3( i    , j + 1, size)
+			objects.push(new Object3DTriangle(af, bf, cf, color))
+			objects.push(new Object3DTriangle(af, cf, df, color))
+			// backw
+			let ab = CreateVector3( i    , j    ,-size)
+			let bb = CreateVector3( i + 1, j    ,-size)
+			let cb = CreateVector3( i + 1, j + 1,-size)
+			let db = CreateVector3( i    , j + 1,-size)
+			objects.push(new Object3DTriangle(ab, cb, bb, color))
+			objects.push(new Object3DTriangle(ab, db, cb, color))
+			// top
+			let at = CreateVector3( i    , size, j    )
+			let bt = CreateVector3( i + 1, size, j    )
+			let ct = CreateVector3( i + 1, size, j + 1)
+			let dt = CreateVector3( i    , size, j + 1)
+			objects.push(new Object3DTriangle(at, ct, bt, color))
+			objects.push(new Object3DTriangle(at, dt, ct, color))
+			// down
+			let ad = CreateVector3( i    , -size, j    )
+			let bd = CreateVector3( i + 1, -size, j    )
+			let cd = CreateVector3( i + 1, -size, j + 1)
+			let dd = CreateVector3( i    , -size, j + 1)
+			objects.push(new Object3DTriangle(ad, bd, cd, color))
+			objects.push(new Object3DTriangle(ad, cd, dd, color))
+			// left
+			let al = CreateVector3(-size, i    , j    )
+			let bl = CreateVector3(-size, i + 1, j    )
+			let cl = CreateVector3(-size, i + 1, j + 1)
+			let dl = CreateVector3(-size, i    , j + 1)
+			objects.push(new Object3DTriangle(al, cl, bl, color))
+			objects.push(new Object3DTriangle(al, dl, cl, color))
+			// right
+			let ar = CreateVector3( size, i    , j    )
+			let br = CreateVector3( size, i + 1, j    )
+			let cr = CreateVector3( size, i + 1, j + 1)
+			let dr = CreateVector3( size, i    , j + 1)
+			objects.push(new Object3DTriangle(ar, br, cr, color))
+			objects.push(new Object3DTriangle(ar, cr, dr, color))
 		}
 	}
+	// for (let i = -size; i <= size; i++) {
+	// 	for (let j = -size; j <= size; j++) {
+	// 		objects.push(createObject( i, j, size))
+	// 		objects.push(createObject( i, j,-size))
+	// 		objects.push(createObject( i, size, j))
+	// 		objects.push(createObject( i,-size, j))
+	// 		objects.push(createObject( size, i, j))
+	// 		objects.push(createObject(-size, i, j))
+	// 	}
+	// }
 
 	function createObject(x, y, z) {
 		let position = CreateVector3(x, y, z)
@@ -101,7 +151,6 @@
 		for (let i = 0; i < objects.length; i++) {
 			objects[i].draw(canvas)
 		}
-
 
 		// help
 		canvas.fillStyle    = '#FFFFFF'  // white
