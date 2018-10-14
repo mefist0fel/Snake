@@ -164,9 +164,9 @@ function MultiplyVector3ToMatrix4(v, m) {
 	var vec4 = [v[0], v[1], v[2], 1.0]
 	var res = MultiplyVector4ToMatrix4(vec4, m)
 	return [
-		res[0] * res[3],
-		res[1] * res[3],
-		res[2] * res[3]
+		res[0] / res[3],
+		res[1] / res[3],
+		res[2] / res[3]
 	]
 }
 
@@ -177,12 +177,6 @@ function MultiplyVector4ToMatrix4(v, m) {
 		v[0] * m[ 2] + v[1] * m[ 6] + v[2] * m[10] + v[3] * m[14],
 		v[0] * m[ 3] + v[1] * m[ 7] + v[2] * m[11] + v[3] * m[15]
 	]
-	// return [
-	// 	v[0] * m[ 0] + v[1] * m[ 1] + v[2] * m[ 2] + v[3] * m[ 3],
-	// 	v[0] * m[ 4] + v[1] * m[ 5] + v[2] * m[ 6] + v[3] * m[ 7],
-	// 	v[0] * m[ 8] + v[1] * m[ 9] + v[2] * m[10] + v[3] * m[11],
-	// 	v[0] * m[12] + v[1] * m[13] + v[2] * m[14] + v[3] * m[15]
-	// ]
 }
 
 function CreateProjectionMatrix4(topY = 100.0, rightX = 100.0, nearZ = 1.0, farZ = 100.0) {
@@ -196,7 +190,7 @@ function CreateProjectionMatrix4(topY = 100.0, rightX = 100.0, nearZ = 1.0, farZ
 	return [
 		n/r,   0,   0,   0,
 		  0, n/t,   0,   0,
-		  0,   0,   g,   1,
+		  0,   0,   g,  -1,
 		  0,   0,   h,   0
 	]
 }
