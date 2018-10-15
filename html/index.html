@@ -38,32 +38,33 @@
 
 	width = document.documentElement.clientWidth
 	height = document.documentElement.clientHeight
-	let x = 0 // 45.0
-	let y = 0 //-45.0
+	let x = 45.0
+	let y =-45.0
 	let upVector = CreateVector3(0, 1)
 	let rightVector = CreateVector3(1, 0)
 
 	let camera = new Camera(width, height)
 
-	let objects = []// createCube(10.0);
+	let objects = createCube(10.0);
 	let nav = new NavigationTriangle(
 		CreateVector3(0.0, 0.0, 0.0),
 		CreateVector3(0.0, 2.0, 0.5),
 		CreateVector3(2.0, 0.0, 0.5)
 	)
-	objects.push(new Object3DTriangle(
-		nav.pointA,
-		nav.pointB,
-		nav.pointC
-	))
+	// objects = []
+	// objects.push(new Object3DTriangle(
+	// 	nav.pointA,
+	// 	nav.pointB,
+	// 	nav.pointC
+	// ))
 
-	for(let i = 0; i < 10; i++){
-		for(let j = 0; j < 10; j++){
-			let point = CreateVector3(i, j)
-			let projectedPoint = nav.GetProjectionPoint(point)
-			objects.push(new Object3D(projectedPoint, 0.1))
-		}	
-	}
+	// for(let i = 0; i < 10; i++){
+	// 	for(let j = 0; j < 10; j++){
+	// 		let point = CreateVector3(i, j)
+	// 		let projectedPoint = nav.GetProjectionPoint(point)
+	// 		objects.push(new Object3D(projectedPoint, 0.1))
+	// 	}	
+	// }
 
 	// init
 	let canvasElement = document.getElementById('snake')
