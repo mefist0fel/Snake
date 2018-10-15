@@ -1,10 +1,10 @@
 // 3d Dot class
 class Object3D {
-    constructor(positionVector3, color = '#FFEEEE') {
+    constructor(positionVector3, radius = 0.5, color = '#FFEEEE') {
 		this.position = positionVector3
 		this.screenPosition = CreateVector3()
 		this.color = color
-		this.radius = 0.5
+		this.radius = radius
 		this.radiusPositionVector = CreateVector3(this.radius)
 		this.screenRadius = 10.0
 	}

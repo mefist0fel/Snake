@@ -189,5 +189,13 @@ function createObject(x, y, z) {
     var g = parseInt((y + 5) * 255 / 10)
     var b = parseInt((z + 5) * 255 / 10)
     let color = rgbToHex(r, g, b)
-    return new Object3D(position, color)
+    return new Object3D(position, 0.5, color)
+}
+
+function rgbToHex(r, g, b) {
+    function componentToHex(c) {
+        var hex = c.toString(16);
+        return hex.length == 1 ? "0" + hex : hex;
+    }
+    return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
 }

@@ -65,6 +65,18 @@ function MultiplyVector3(v, multiplier) {
 	return [v[0] * multiplier, v[1] * multiplier, v[2] * multiplier]
 }
 
+function DotProductVector3(a, b) {
+	return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+}
+
+function CrossProductVector3(a, b) {
+	return CreateVector3(
+		a[1] * b[2] - a[2] * b[1],
+		a[2] * b[0] - a[0] * b[2],
+		a[0] * b[1] - a[1] * b[0]
+	)
+}
+
 function Vector3Length(v) {
 	return Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2])
 }

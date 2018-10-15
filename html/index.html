@@ -19,11 +19,12 @@
 	<body>
 		<canvas id="snake"></canvas>
 	</body>
-	<script type="text/javascript" src="input.js"></script>
 	<script type="text/javascript" src="geometry.js"></script>
+	<script type="text/javascript" src="input.js"></script>
 	<script type="text/javascript" src="camera.js"></script>
 	<script type="text/javascript" src="object3d.js"></script>
 	<script type="text/javascript" src="level.js"></script>
+	<script type="text/javascript" src="navigation_mesh.js"></script>
 	<!--
 	<script type="text/javascript" src="jsfxr.js"></script>
 	<script type="text/javascript" src="audio.js"></script>-->
@@ -37,21 +38,31 @@
 
 	width = document.documentElement.clientWidth
 	height = document.documentElement.clientHeight
-	let x = 45.0
-	let y = -45.0
+	let x = 0 // 45.0
+	let y = 0 //-45.0
 	let upVector = CreateVector3(0, 1)
 	let rightVector = CreateVector3(1, 0)
 
 	let camera = new Camera(width, height)
 
-	let objects = createCube(10.0);
+	let objects = []// createCube(10.0);
+	let nav = new NavigationTriangle(
+		CreateVector3(0.0, 0.0, 0.0),
+		CreateVector3(0.0, 2.0, 0.5),
+		CreateVector3(2.0, 0.0, 0.5)
+	)
+	objects.push(new Object3DTriangle(
+		nav.pointA,
+		nav.pointB,
+		nav.pointC
+	))
 
-	function rgbToHex(r, g, b) {
-		function componentToHex(c) {
-			var hex = c.toString(16);
-			return hex.length == 1 ? "0" + hex : hex;
-		}
-		return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+	for(let i = 0; i < 10; i++){
+		for(let j = 0; j < 10; j++){
+			let point = CreateVector3(i, j)
+			let projectedPoint = nav.GetProjectionPoint(point)
+			objects.push(new Object3D(projectedPoint, 0.1))
+		}	
 	}
 
 	// init
