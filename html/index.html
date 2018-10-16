@@ -25,6 +25,7 @@
 	<script type="text/javascript" src="object3d.js"></script>
 	<script type="text/javascript" src="level.js"></script>
 	<script type="text/javascript" src="navigation_mesh.js"></script>
+	<script type="text/javascript" src="navigation_node.js"></script>
 	<!--
 	<script type="text/javascript" src="jsfxr.js"></script>
 	<script type="text/javascript" src="audio.js"></script>-->
@@ -46,16 +47,27 @@
 	let camera = new Camera(width, height)
 
 	let objects = createDrawedCube()
-	let nav = new NavigationTriangle(
+
+	let nav = new NavigationNode(
 		CreateVector3(-5.0, 0.0, 0.0),
-		CreateVector3( 0.0, 5.0, 5.0),
+		CreateVector3( 0.0, 5.0, 2.0),
 		CreateVector3( 5.0, 0.0, 0.0)
+	)
+	let nav2 = new NavigationNode(
+		CreateVector3( 0.0, 5.0, 2.0),
+		CreateVector3(-5.0, 0.0, 0.0),
+		CreateVector3(-10.0, 5.0, 5.0)
 	)
 	objects = []
 	objects.push(new Object3DEdgedTriangle(
 		nav.pointA,
 		nav.pointB,
 		nav.pointC
+	))
+	objects.push(new Object3DEdgedTriangle(
+		nav2.pointA,
+		nav2.pointB,
+		nav2.pointC
 	))
 
 
