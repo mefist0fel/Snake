@@ -53,52 +53,52 @@ function createDrawedCube(size = 5) {
 	let objects = []
 	for (let i = -size; i < size; i++) {
 	 	for (let j = -size; j < size; j++) {
-			let color = '#FFFFFF'
-			if ((parseInt(size + i * 0.5 + 0.5) + parseInt(size + j * 0.5 + 0.5)) % 2 == 1)
-				color = '#666666'
-			// forw
-			let af = CreateVector3( -edgeSize, -edgeSize, size)
-			let bf = CreateVector3( i + 1, -edgeSize, size)
-			let cf = CreateVector3( i + 1, edgeSize, size)
-			let df = CreateVector3( -edgeSize, edgeSize, size)
-			objects.push(new Object3DTriangle(af, bf, cf, color))
-			objects.push(new Object3DTriangle(af, cf, df, color))
-			// backw
-			let ab = CreateVector3( -edgeSize, -edgeSize,-size)
-			let bb = CreateVector3( i + 1, -edgeSize,-size)
-			let cb = CreateVector3( i + 1, edgeSize,-size)
-			let db = CreateVector3( -edgeSize, edgeSize,-size)
-			objects.push(new Object3DTriangle(ab, cb, bb, color))
-			objects.push(new Object3DTriangle(ab, db, cb, color))
-			// top
-			let at = CreateVector3( -edgeSize, size, -edgeSize)
-			let bt = CreateVector3( i + 1, size, -edgeSize)
-			let ct = CreateVector3( i + 1, size, edgeSize)
-			let dt = CreateVector3( -edgeSize, size, edgeSize)
-			objects.push(new Object3DTriangle(at, ct, bt, color))
-			objects.push(new Object3DTriangle(at, dt, ct, color))
-			// down
-			let ad = CreateVector3( -edgeSize, -size, -edgeSize)
-			let bd = CreateVector3( i + 1, -size, -edgeSize)
-			let cd = CreateVector3( i + 1, -size, edgeSize)
-			let dd = CreateVector3( -edgeSize, -size, edgeSize)
-			objects.push(new Object3DTriangle(ad, bd, cd, color))
-			objects.push(new Object3DTriangle(ad, cd, dd, color))
-			// left
-			let al = CreateVector3(-size, -edgeSize, -edgeSize)
-			let bl = CreateVector3(-size, i + 1, -edgeSize)
-			let cl = CreateVector3(-size, i + 1, edgeSize)
-			let dl = CreateVector3(-size, -edgeSize, edgeSize)
-			objects.push(new Object3DTriangle(al, cl, bl, color))
-			objects.push(new Object3DTriangle(al, dl, cl, color))
-			// right
-			let ar = CreateVector3( size, -edgeSize, -edgeSize)
-			let br = CreateVector3( size, i + 1, -edgeSize)
-			let cr = CreateVector3( size, i + 1, edgeSize)
-			let dr = CreateVector3( size, -edgeSize, edgeSize)
-			objects.push(new Object3DTriangle(ar, br, cr, color))
-			objects.push(new Object3DTriangle(ar, cr, dr, color))
-		}
+            let color = '#FFFFFF'
+            if ((parseInt(size + i * 0.5 + 0.5) + parseInt(size + j * 0.5 + 0.5)) % 2 == 1)
+                color = '#666666'
+            // forw
+            let af = CreateVector3( i    , j    , size)
+            let bf = CreateVector3( i + 1, j    , size)
+            let cf = CreateVector3( i + 1, j + 1, size)
+            let df = CreateVector3( i    , j + 1, size)
+            objects.push(new Object3DTriangle(af, bf, cf, color))
+            objects.push(new Object3DTriangle(af, cf, df, color))
+            // backw
+            let ab = CreateVector3( i    , j    ,-size)
+            let bb = CreateVector3( i + 1, j    ,-size)
+            let cb = CreateVector3( i + 1, j + 1,-size)
+            let db = CreateVector3( i    , j + 1,-size)
+            objects.push(new Object3DTriangle(ab, cb, bb, color))
+            objects.push(new Object3DTriangle(ab, db, cb, color))
+            // top
+            let at = CreateVector3( i    , size, j    )
+            let bt = CreateVector3( i + 1, size, j    )
+            let ct = CreateVector3( i + 1, size, j + 1)
+            let dt = CreateVector3( i    , size, j + 1)
+            objects.push(new Object3DTriangle(at, ct, bt, color))
+            objects.push(new Object3DTriangle(at, dt, ct, color))
+            // down
+            let ad = CreateVector3( i    , -size, j    )
+            let bd = CreateVector3( i + 1, -size, j    )
+            let cd = CreateVector3( i + 1, -size, j + 1)
+            let dd = CreateVector3( i    , -size, j + 1)
+            objects.push(new Object3DTriangle(ad, bd, cd, color))
+            objects.push(new Object3DTriangle(ad, cd, dd, color))
+            // left
+            let al = CreateVector3(-size, i    , j    )
+            let bl = CreateVector3(-size, i + 1, j    )
+            let cl = CreateVector3(-size, i + 1, j + 1)
+            let dl = CreateVector3(-size, i    , j + 1)
+            objects.push(new Object3DTriangle(al, cl, bl, color))
+            objects.push(new Object3DTriangle(al, dl, cl, color))
+            // right
+            let ar = CreateVector3( size, i    , j    )
+            let br = CreateVector3( size, i + 1, j    )
+            let cr = CreateVector3( size, i + 1, j + 1)
+            let dr = CreateVector3( size, i    , j + 1)
+            objects.push(new Object3DTriangle(ar, br, cr, color))
+            objects.push(new Object3DTriangle(ar, cr, dr, color))
+        }
     }
     return objects
 }
@@ -130,10 +130,10 @@ function createSphere(radius = 10.0, segments = 7) {
                     color = '#666666'
                 
                 // forw
-                let af = createNormalizedPoint( -edgeSize, -edgeSize, size, radius, sidesRotationMatrix[sideId])
-                let bf = createNormalizedPoint( i + 1, -edgeSize, size, radius, sidesRotationMatrix[sideId])
-                let cf = createNormalizedPoint( i + 1, edgeSize, size, radius, sidesRotationMatrix[sideId])
-                let df = createNormalizedPoint( -edgeSize, edgeSize, size, radius, sidesRotationMatrix[sideId])
+                let af = createNormalizedPoint(     i,     j, size, radius, sidesRotationMatrix[sideId])
+                let bf = createNormalizedPoint( i + 1,     j, size, radius, sidesRotationMatrix[sideId])
+                let cf = createNormalizedPoint( i + 1, j + 1, size, radius, sidesRotationMatrix[sideId])
+                let df = createNormalizedPoint(     i, j + 1, size, radius, sidesRotationMatrix[sideId])
                 objects.push(new Object3DTriangle(af, bf, cf, color))
                 objects.push(new Object3DTriangle(af, cf, df, color))
             }
