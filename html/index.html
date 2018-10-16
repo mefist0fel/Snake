@@ -152,6 +152,11 @@
 		if (input.key[36]) { // End
 			x += speed
 		}
+		if (nav.IsInsideTriangle(heroPosition)) {
+			heroView.color = rgbToHex(0, 255, 0)
+		} else {
+			heroView.color = rgbToHex(255, 0, 0)
+		}
 		heroView.position = heroPosition
 		targetView.position = AddVector3(heroPosition, heroVector)
 		camera.worldMatrix = MultiplyMatrix3(CreateMatrix3RotatedX(y), CreateMatrix3RotatedY(x))
