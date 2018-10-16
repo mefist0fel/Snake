@@ -123,16 +123,16 @@
 		// D = 68
 		// space = 32
 		let moveSpeed = 2.0 * dt
-		if (input.key[38] || input.key[87]) { // UP
+		if (input.key[38] || input.key[87]) { // UP | W
 			heroPosition = AddVector3(heroPosition, MultiplyVector3(nav.unitTangent, moveSpeed))
 		}
-		if (input.key[40] || input.key[83]) { // DOWN
+		if (input.key[40] || input.key[83]) { // DOWN | S
 			heroPosition = AddVector3(heroPosition, MultiplyVector3(nav.unitTangent, -moveSpeed))
 		}
-		if (input.key[37] || input.key[65]) { // LEFT
+		if (input.key[37] || input.key[65]) { // LEFT | A
 			heroPosition = AddVector3(heroPosition, MultiplyVector3(nav.unitBinormal, moveSpeed))
 		}
-		if (input.key[39] || input.key[68]) { // RIGHT
+		if (input.key[39] || input.key[68]) { // RIGHT | D
 			heroPosition = AddVector3(heroPosition, MultiplyVector3(nav.unitBinormal, -moveSpeed))
 		}
 
@@ -150,7 +150,6 @@
 			x += speed
 		}
 		heroView.position = heroPosition
-		//worldMatrix = CreateEulerMatrix3(x, 0, 0.0) // MultiplyMatrix3(CreateRotationMatrix3(upVector, x), CreateRotationMatrix3(rightVector, y))
 		camera.worldMatrix = MultiplyMatrix3(CreateMatrix3RotatedX(y), CreateMatrix3RotatedY(x))
 		if (input.key[32]) { // space
 		}
