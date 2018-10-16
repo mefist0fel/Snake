@@ -202,13 +202,14 @@ function MultiplyVector3ToMatrix3(v, m) {
 		v[0] * m[6] + v[1] * m[7] + v[2] * m[8]
 	]
 }
-		function findMiddlePoint (points) {
-			let sum = CreateVector3()
-			for(let i = 0; i < points.length; i++) {
-				sum = AddVector3(sum, points[i])
-			}
-			return MultiplyVector3(sum, 1.0 / parseFloat(points.length))
-		}
+
+function findMiddlePoint (points) {
+	let sum = CreateVector3()
+	for(let i = 0; i < points.length; i++) {
+		sum = AddVector3(sum, points[i])
+	}
+	return MultiplyVector3(sum, 1.0 / parseFloat(points.length))
+}
 
 // Matrix 4 * 4 functions
 function CreateUnitMatrix4() {
