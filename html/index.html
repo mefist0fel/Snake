@@ -38,31 +38,40 @@
 
 	width = document.documentElement.clientWidth
 	height = document.documentElement.clientHeight
-	let x = 45.0
-	let y =-45.0
+	let x = 0.0 // 45.0
+	let y = 0.0 //-45.0
 	let upVector = CreateVector3(0, 1)
 	let rightVector = CreateVector3(1, 0)
 
 	let camera = new Camera(width, height)
 
-	let objects = createDrawedCube();
+	let objects = createDrawedCube()
 	let nav = new NavigationTriangle(
-		CreateVector3(0.0, 0.0, 0.0),
-		CreateVector3(0.0, 2.0, 0.5),
-		CreateVector3(2.0, 0.0, 0.5)
+		CreateVector3(-5.0, 0.0, 0.0),
+		CreateVector3( 0.0, 5.0, 5.0),
+		CreateVector3( 5.0, 0.0, 0.0)
 	)
-	// objects = []
-	// objects.push(new Object3DTriangle(
-	// 	nav.pointA,
-	// 	nav.pointB,
-	// 	nav.pointC
-	// ))
+	objects = []
+	objects.push(new Object3DEdgedTriangle(
+		nav.pointA,
+		nav.pointB,
+		nav.pointC
+	))
 
-	// for(let i = 0; i < 10; i++){
-	// 	for(let j = 0; j < 10; j++){
-	// 		let point = CreateVector3(i, j)
+
+	let heroPosition = CreateVector3(2, 2)
+	heroPosition = nav.GetProjectionPoint(heroPosition);
+	let heroAngle = 0.0
+
+	let heroView = new Object3D(heroPosition, 0.5, rgbToHex(255, 0, 0))
+	objects.push(heroView);
+
+	// for(let i = 0; i < 11; i++){
+	// 	for(let j = 0; j < 11; j++){
+	// 		let point = CreateVector3(i - 5, j)
+	// 		objects.push(new Object3D(point, 0.1, rgbToHex(255, 255, 0)))
 	// 		let projectedPoint = nav.GetProjectionPoint(point)
-	// 		objects.push(new Object3D(projectedPoint, 0.1))
+	// 		objects.push(new Object3D(projectedPoint, 0.06))
 	// 	}	
 	// }
 
@@ -113,19 +122,34 @@
 		// A = 65
 		// D = 68
 		// space = 32
-		let speed = 60.0 * dt
+		let moveSpeed = 2.0 * dt
 		if (input.key[38] || input.key[87]) { // UP
-			y -= speed
+			heroPosition = AddVector3(heroPosition, MultiplyVector3(nav.unitTangent, moveSpeed))
 		}
 		if (input.key[40] || input.key[83]) { // DOWN
-			y += speed
+			heroPosition = AddVector3(heroPosition, MultiplyVector3(nav.unitTangent, -moveSpeed))
 		}
 		if (input.key[37] || input.key[65]) { // LEFT
-			x -= speed
+			heroPosition = AddVector3(heroPosition, MultiplyVector3(nav.unitBinormal, moveSpeed))
 		}
 		if (input.key[39] || input.key[68]) { // RIGHT
+			heroPosition = AddVector3(heroPosition, MultiplyVector3(nav.unitBinormal, -moveSpeed))
+		}
+
+		let speed = 60.0 * dt
+		if (input.key[33]) { // Page UP
+			y -= speed
+		}
+		if (input.key[34]) { // Page DOWN
+			y += speed
+		}
+		if (input.key[35]) { // HOME
+			x -= speed
+		}
+		if (input.key[36]) { // End
 			x += speed
 		}
+		heroView.position = heroPosition
 		//worldMatrix = CreateEulerMatrix3(x, 0, 0.0) // MultiplyMatrix3(CreateRotationMatrix3(upVector, x), CreateRotationMatrix3(rightVector, y))
 		camera.worldMatrix = MultiplyMatrix3(CreateMatrix3RotatedX(y), CreateMatrix3RotatedY(x))
 		if (input.key[32]) { // space

@@ -1,5 +1,4 @@
 class NavigationMesh {
-
 }
 
 class NavigationTriangle {
@@ -10,11 +9,14 @@ class NavigationTriangle {
         this.pointA = vectorA
         this.pointB = vectorB
         this.pointC = vectorC
-        let ba = SubstractVector3(vectorB, vectorA)
-        let ca = SubstractVector3(vectorC, vectorA)
-        let normal = CrossProductVector3(ba, ca)
+        this.center = FindMiddlePoint([vectorA, vectorB, vectorC])
+        let bc = SubstractVector3(vectorB, this.center)
+        let cc = SubstractVector3(vectorC, this.center)
+        let normal = CrossProductVector3(bc, cc)
         this.normal = normal
         this.unitNormal = NormalizeVector3(normal)
+        this.unitTangent = NormalizeVector3(SubstractVector3(vectorB, this.center))
+        this.unitBinormal = NormalizeVector3(CrossProductVector3(this.unitNormal, this.unitTangent))
         this.planeA = normal[0]
         this.planeB = normal[1]
         this.planeC = normal[2]
@@ -22,7 +24,7 @@ class NavigationTriangle {
     }
 
     GetDistanceToPlane(point) {
-        let offset = SubstractVector3(point, this.pointA)
+        let offset = SubstractVector3(point, this.center)
         return DotProductVector3(this.unitNormal, offset)
     }
 

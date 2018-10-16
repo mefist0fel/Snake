@@ -69,6 +69,11 @@ function DotProductVector3(a, b) {
 	return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 }
 
+function IsEqualVector3(a, b) {
+	let sigma = 0.001
+	return DistanceVector3(a, b) < sigma
+}
+
 function CrossProductVector3(a, b) {
 	return CreateVector3(
 		a[1] * b[2] - a[2] * b[1],
@@ -81,6 +86,10 @@ function Vector3Length(v) {
 	return Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2])
 }
 
+function DistanceVector3(a, b) {
+	return Vector3Length(SubstractVector3(a, b))
+}
+
 function NormalizeVector3(v) {
 	var dist = 1.0 / Vector3Length(v);
 	if (dist == Infinity) {
@@ -90,6 +99,14 @@ function NormalizeVector3(v) {
 		dist = Number.MIN_VALUE;
 	}
 	return MultiplyVector3(v, dist);
+}
+
+function FindMiddlePoint (points) {
+	let sum = CreateVector3()
+	for(let i = 0; i < points.length; i++) {
+		sum = AddVector3(sum, points[i])
+	}
+	return MultiplyVector3(sum, 1.0 / parseFloat(points.length))
 }
 
 // Matrix 3 * 3 functions
@@ -179,17 +196,19 @@ function MultiplyMatrix3(ma, mb) {
 }
 
 function MultiplyVector3ToMatrix3(v, m) {
-	//return [
-	//	v[0] * m[0] + v[1] * m[3] + v[2] * m[6],
-	//	v[0] * m[1] + v[1] * m[4] + v[2] * m[7],
-	//	v[0] * m[2] + v[1] * m[5] + v[2] * m[8]
-	//]
 	return [
 		v[0] * m[0] + v[1] * m[1] + v[2] * m[2],
 		v[0] * m[3] + v[1] * m[4] + v[2] * m[5],
 		v[0] * m[6] + v[1] * m[7] + v[2] * m[8]
 	]
 }
+		function findMiddlePoint (points) {
+			let sum = CreateVector3()
+			for(let i = 0; i < points.length; i++) {
+				sum = AddVector3(sum, points[i])
+			}
+			return MultiplyVector3(sum, 1.0 / parseFloat(points.length))
+		}
 
 // Matrix 4 * 4 functions
 function CreateUnitMatrix4() {
