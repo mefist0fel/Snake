@@ -181,9 +181,9 @@ function CreateRotationMatrix3(axeVector, angle) { // axe vector must be unit //
 	var s = Math.sin(radian)
 	var q = (1.0 - c)
 	return [
-		c + q * x * x,       q * x * y - s * z,   q * x * z + s * y,
-		q * y * x + s * z,   c + q * y * y,       q * y * z - s * x,
-		q * z * x - s * y,   q * z * y - s * x,   c + q * z * z
+	 	c + q * x * x,       q * x * y - s * z,   q * x * z + s * y,
+	 	q * y * x + s * z,   c + q * y * y,       q * y * z - s * x,
+	 	q * z * x - s * y,   q * z * y - s * x,   c + q * z * z
 	]
 }
 

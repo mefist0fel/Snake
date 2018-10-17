@@ -77,9 +77,9 @@ class Object3DEdgedTriangle {
 	}
 
 	draw (canvas) {
-		var dot = PointToLine(this.screenPoints[0], this.screenPoints[1], this.screenPoints[2])
-		if (dot > 0)
-			return
+		// var dot = PointToLine(this.screenPoints[0], this.screenPoints[1], this.screenPoints[2])
+		// if (dot > 0)
+		// 	return
 		canvas.strokeStyle = this.color;
 		canvas.beginPath();
 		let last = this.screenPoints[this.screenPoints.length - 1]

@@ -55,9 +55,14 @@
 			CreateVector3( 5.0, 0.0, 0.0)
 		),
 		new NavigationNode(
+			CreateVector3( 5.0, 0.0, 0.0),
+			CreateVector3( 0.0, 5.0, 2.0),
+			CreateVector3( 7.0, 5.0, 5.0)
+		),
+		new NavigationNode(
 			CreateVector3( 0.0, 5.0, 2.0),
 			CreateVector3(-5.0, 0.0, 0.0),
-			CreateVector3(-10.0, 5.0, 5.0)
+			CreateVector3(-7.0, 5.0, 5.0)
 		),
 		new NavigationNode(
 			CreateVector3(-5.0, 0.0, 0.0),
@@ -65,10 +70,10 @@
 			CreateVector3( 0.0,-5.0, 2.0)
 		),
 		new NavigationNode(
-			CreateVector3( 5.0, 0.0, 0.0),
-			CreateVector3( 0.0, 5.0, 2.0),
-			CreateVector3(10.0, 5.0, 5.0)
-		),
+			CreateVector3(-7.0, 5.0, 5.0),
+			CreateVector3( 7.0, 5.0, 5.0),
+			CreateVector3( 0.0, 5.0, 2.0)
+		)
 	]
 
 	let navigationMesh = new NavigationMesh(navigationNodes)
@@ -79,6 +84,20 @@
 				navigationNodes[i].pointA,
 				navigationNodes[i].pointB,
 				navigationNodes[i].pointC
+			)
+		)
+		objects.push(
+			new Object3DEdgedTriangle(
+				navigationNodes[i].center,
+				AddVector3(navigationNodes[i].unitNormal, navigationNodes[i].center),
+				AddVector3(navigationNodes[i].unitTangent, navigationNodes[i].center)
+			)
+		)
+		objects.push(
+			new Object3DEdgedTriangle(
+				navigationNodes[i].center,
+				AddVector3(navigationNodes[i].unitNormal, navigationNodes[i].center),
+				AddVector3(navigationNodes[i].unitBinormal, navigationNodes[i].center)
 			)
 		)
 	}
