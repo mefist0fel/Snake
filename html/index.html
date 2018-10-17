@@ -48,46 +48,47 @@
 
 	let objects = createDrawedCube()
 
-	let nav = new NavigationNode(
-		CreateVector3(-5.0, 0.0, 0.0),
-		CreateVector3( 0.0, 5.0, 2.0),
-		CreateVector3( 5.0, 0.0, 0.0)
-	)
-	let nav2 = new NavigationNode(
-		CreateVector3( 0.0, 5.0, 2.0),
-		CreateVector3(-5.0, 0.0, 0.0),
-		CreateVector3(-10.0, 5.0, 5.0)
-	)
+	let navigationNodes = [
+		new NavigationNode(
+			CreateVector3(-5.0, 0.0, 0.0),
+			CreateVector3( 0.0, 5.0, 2.0),
+			CreateVector3( 5.0, 0.0, 0.0)
+		),
+		new NavigationNode(
+			CreateVector3( 0.0, 5.0, 2.0),
+			CreateVector3(-5.0, 0.0, 0.0),
+			CreateVector3(-10.0, 5.0, 5.0)
+		),
+		new NavigationNode(
+			CreateVector3(-5.0, 0.0, 0.0),
+			CreateVector3( 5.0, 0.0, 0.0),
+			CreateVector3( 0.0,-5.0, 2.0)
+		),
+		new NavigationNode(
+			CreateVector3( 5.0, 0.0, 0.0),
+			CreateVector3( 0.0, 5.0, 2.0),
+			CreateVector3(10.0, 5.0, 5.0)
+		),
+	]
+
+	let navigationMesh = new NavigationMesh(navigationNodes)
 	objects = []
-	objects.push(new Object3DEdgedTriangle(
-		nav.pointA,
-		nav.pointB,
-		nav.pointC
-	))
-	objects.push(new Object3DEdgedTriangle(
-		nav2.pointA,
-		nav2.pointB,
-		nav2.pointC
-	))
+	for(let i = 0; i < navigationNodes.length; i++) {
+		objects.push(
+			new Object3DEdgedTriangle(
+				navigationNodes[i].pointA,
+				navigationNodes[i].pointB,
+				navigationNodes[i].pointC
+			)
+		)
+	}
 
-
-	let heroPosition = CreateVector3(2, 2)
-	let heroVector = MultiplyVector3(nav.unitTangent, 1.0);
-	heroPosition = nav.GetProjectionPoint(heroPosition);
-
-	let heroView = new Object3D(heroPosition, 0.5, rgbToHex(255, 0, 0))
+// test
+	let heroView = new Object3D(navigationMesh.heroPosition, 0.5, rgbToHex(255, 0, 0))
 	objects.push(heroView);
-	let targetView = new Object3D(AddVector3(heroPosition, heroVector), 0.2, rgbToHex(0, 0, 255))
+	let targetView = new Object3D(AddVector3(navigationMesh.heroPosition, navigationMesh.heroVector), 0.2, rgbToHex(0, 0, 255))
 	objects.push(targetView);
 
-	// for(let i = 0; i < 11; i++){
-	// 	for(let j = 0; j < 11; j++){
-	// 		let point = CreateVector3(i - 5, j)
-	// 		objects.push(new Object3D(point, 0.1, rgbToHex(255, 255, 0)))
-	// 		let projectedPoint = nav.GetProjectionPoint(point)
-	// 		objects.push(new Object3D(projectedPoint, 0.06))
-	// 	}	
-	// }
 
 	// init
 	let canvasElement = document.getElementById('snake')
@@ -139,16 +140,16 @@
 		let moveSpeed = 2.0 * dt
 		let rotateSpeed = 60.0 * dt
 		if (input.key[38] || input.key[87]) { // UP | W
-			heroPosition = AddVector3(heroPosition, MultiplyVector3(heroVector, moveSpeed))
+			navigationMesh.moveHero(moveSpeed)
 		}
 		if (input.key[40] || input.key[83]) { // DOWN | S
-			heroPosition = AddVector3(heroPosition, MultiplyVector3(heroVector, -moveSpeed))
+			navigationMesh.moveHero(-moveSpeed)
 		}
 		if (input.key[37] || input.key[65]) { // LEFT | A
-			heroVector = MultiplyVector3ToMatrix3(heroVector, CreateRotationMatrix3(nav.unitNormal, rotateSpeed))
+			navigationMesh.rotateHeroDirection(rotateSpeed)
 		}
 		if (input.key[39] || input.key[68]) { // RIGHT | D
-			heroVector = MultiplyVector3ToMatrix3(heroVector, CreateRotationMatrix3(nav.unitNormal, -rotateSpeed))
+			navigationMesh.rotateHeroDirection(-rotateSpeed)
 		}
 
 		let speed = 60.0 * dt
@@ -164,13 +165,13 @@
 		if (input.key[36]) { // End
 			x += speed
 		}
-		if (nav.IsInsideTriangle(heroPosition)) {
-			heroView.color = rgbToHex(0, 255, 0)
-		} else {
-			heroView.color = rgbToHex(255, 0, 0)
-		}
-		heroView.position = heroPosition
-		targetView.position = AddVector3(heroPosition, heroVector)
+		// if (nav.IsInsideTriangle(navigationMesh.heroPosition)) {
+		// 	heroView.color = rgbToHex(0, 255, 0)
+		// } else {
+		// 	heroView.color = rgbToHex(255, 0, 0)
+		// }
+		heroView.position = navigationMesh.heroPosition
+		targetView.position = AddVector3(navigationMesh.heroPosition, navigationMesh.heroVector)
 		camera.worldMatrix = MultiplyMatrix3(CreateMatrix3RotatedX(y), CreateMatrix3RotatedY(x))
 		if (input.key[32]) { // space
 		}
