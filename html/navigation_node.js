@@ -41,20 +41,14 @@ class NavigationNode {
             let otherPointB = otherNode.points[(i + 1) % otherNode.points.length]
             
             if (this.isCommonEdge(this.pointA, this.pointB, otherPointA, otherPointB)) {
-                // console.log("add AB " + this.name + " neigbhor " + otherNode.name + " : " +
-                //     this.pointA + " " + this.pointB + "=" + otherPointA + " " + otherNode.points[i + 1])
                 this.edgeNeigbhorAB = otherNode
                 return
             }
             if (this.isCommonEdge(this.pointB, this.pointC, otherPointA, otherPointB)) {
-                // console.log("add BC " + this.name + " neigbhor " + otherNode.name + " : " +
-                //     this.pointB + " " + this.pointC + "=" + otherPointA + " " + otherNode.points[i + 1])
                 this.edgeNeigbhorBC = otherNode
                 return
             }
             if (this.isCommonEdge(this.pointC, this.pointA, otherPointA, otherPointB)) {
-                // console.log("add CA " + this.name + " neigbhor " + otherNode.name + " : " +
-                //     this.pointC + " " + this.pointA + "=" + otherPointA + " " + otherPointB)
                 this.edgeNeigbhorCA = otherNode
                 return
             }

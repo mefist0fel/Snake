@@ -172,7 +172,7 @@ function CreateEulerMatrix3(xAngle = 0.0, yAngle = 0.0, zAngle = 0.0) {
 	]
 }
 
-function CreateRotationMatrix3(axeVector, angle) { // axe vector must be unit // TODO - it WRONG! Rework
+function CreateRotationMatrix3(axeVector, angle) { // axe vector must be unit
 	let u = axeVector[0]
 	let v = axeVector[1]
 	let w = axeVector[2]

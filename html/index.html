@@ -80,33 +80,20 @@
 	objects = []
 	for(let i = 0; i < navigationNodes.length; i++) {
 		objects.push(
-			new Object3DEdgedTriangle(
+			new Object3DTriangle(
 				navigationNodes[i].pointA,
 				navigationNodes[i].pointB,
-				navigationNodes[i].pointC
+				navigationNodes[i].pointC,
+				"rgb(255,255,255)", false, false
 			)
 		)
-		// objects.push(
-		// 	new Object3DEdgedTriangle(
-		// 		navigationNodes[i].center,
-		// 		AddVector3(navigationNodes[i].unitNormal, navigationNodes[i].center),
-		// 		AddVector3(navigationNodes[i].unitTangent, navigationNodes[i].center)
-		// 	)
-		// )
-		// objects.push(
-		// 	new Object3DEdgedTriangle(
-		// 		navigationNodes[i].center,
-		// 		AddVector3(navigationNodes[i].unitNormal, navigationNodes[i].center),
-		// 		AddVector3(navigationNodes[i].unitBinormal, navigationNodes[i].center)
-		// 	)
-		// )
 	}
 
 // test
 	let heroView = new Object3D(navigationMesh.heroPosition, 0.5, rgbToHex(255, 0, 0))
-	objects.push(heroView);
+	objects.push(heroView)
 	let targetView = new Object3D(AddVector3(navigationMesh.heroPosition, navigationMesh.heroVector), 0.2, rgbToHex(0, 0, 255))
-	objects.push(targetView);
+	objects.push(targetView)
 
 
 	// init

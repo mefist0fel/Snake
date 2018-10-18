@@ -4,17 +4,14 @@ class NavigationMesh {
         this.currentNode = this.nodes[startNodeId]
         this.heroPosition = this.currentNode.center
         this.heroVector = this.currentNode.unitTangent
-        this.heroDirection = 0.0
         // find neigbhors
         for (let i = 0; i < navigationNodes.length; i++) {
             navigationNodes[i].name = i
         }
         for (let i = 0; i < navigationNodes.length; i++) {
-            // console.log(">>>>> find for node_" + navigationNodes[i].name + " : " + navigationNodes[i].pointA + " " + navigationNodes[i].pointB + " " + navigationNodes[i].pointC)
             for (let j = 0; j < navigationNodes.length; j++) {
                 if (i == j)
                     continue
-                // console.log("check node_" + navigationNodes[j].name + " : " + navigationNodes[j].pointA + " " + navigationNodes[j].pointB + " " + navigationNodes[j].pointC)
                 navigationNodes[i].TryAddNeigbhorNode(navigationNodes[j])
             }
         }
@@ -54,7 +51,6 @@ class NavigationMesh {
         this.currentNode = node
         this.heroPosition = newHeroPosition
         this.heroVector = newHeroVector
-        this.heroDirection = 0.0
     }
 
     FindPositionOnDifferentNode(currentNode, newNode, position, edgePointA, edgePointB) {
@@ -68,8 +64,6 @@ class NavigationMesh {
     }
 
     rotateHeroDirection(angle = 0.0) {
-        // this.heroDirection += angle
-        // this.heroVector = NormalizeVector3(MultiplyVector3ToMatrix3(this.currentNode.unitTangent, CreateRotationMatrix3(this.currentNode.unitNormal, this.heroDirection)))
         this.heroVector = NormalizeVector3(MultiplyVector3ToMatrix3(this.heroVector, CreateRotationMatrix3(this.currentNode.unitNormal, angle)))
     }
 }
