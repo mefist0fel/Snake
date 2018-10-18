@@ -191,7 +191,8 @@
 		// }
 		heroView.position = navigationMesh.heroPosition
 		targetView.position = AddVector3(navigationMesh.heroPosition, navigationMesh.heroVector)
-		camera.worldMatrix = MultiplyMatrix3(CreateMatrix3RotatedX(y), CreateMatrix3RotatedY(x))
+		// camera.worldMatrix = MultiplyMatrix3(CreateMatrix3RotatedX(y), CreateMatrix3RotatedY(x))
+		camera.worldMatrix = MultiplyMatrix3(CreateRotationMatrix3(CreateVector3(1.0), y), CreateRotationMatrix3(CreateVector3(0.0, 1.0), x))
 		if (input.key[32]) { // space
 		}
 	}

@@ -53,7 +53,6 @@ class NavigationMesh {
     }
 
     rotateHeroDirection(angle = 0.0) {
-        console.log(this.currentNode.unitNormal);
         this.heroDirection += angle
         this.heroVector = NormalizeVector3(MultiplyVector3ToMatrix3(this.currentNode.unitTangent, CreateRotationMatrix3(this.currentNode.unitNormal, this.heroDirection)))
     }
