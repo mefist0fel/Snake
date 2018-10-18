@@ -48,17 +48,28 @@ class NavigationMesh {
     }
 
     moveTo(node, edgePointA, edgePointB) {
-        let vectorToEdge = SubstractVector3(this.heroPosition, edgePointA)
-        let distanceFromEdgeStart = DotProductVector3(NormalizeVector3(SubstractVector3(edgePointB, edgePointA)), vectorToEdge)
-        // // let distanceFromEdge = DotProductVector3(this.currentNode.edgeNormalAB, vectorToEdge)
+        let newHeroPosition = this.FindPositionOnDifferentNode(this.currentNode, node, this.heroPosition, edgePointA, edgePointB)
+        let newHeroDirectionInWorldSpace = this.FindPositionOnDifferentNode(this.currentNode, node, AddVector3(this.heroPosition, this.heroVector), edgePointA, edgePointB)
+        let newHeroVector = SubstractVector3(newHeroDirectionInWorldSpace, newHeroPosition)
         this.currentNode = node
-        this.heroPosition = this.currentNode.center
-        this.heroVector = this.currentNode.unitTangent
+        this.heroPosition = newHeroPosition
+        this.heroVector = newHeroVector
         this.heroDirection = 0.0
     }
 
+    FindPositionOnDifferentNode(currentNode, newNode, position, edgePointA, edgePointB) {
+        let vectorToEdge = SubstractVector3(position, edgePointA)
+        let unitEdgeVector = NormalizeVector3(SubstractVector3(edgePointB, edgePointA))
+        let distanceFromEdgeStart = DotProductVector3(unitEdgeVector, vectorToEdge)
+        let currentNodeUnitEdgeNormal = CrossProductVector3(currentNode.unitNormal, unitEdgeVector)
+        let cnextNodeUnitEdgeNormal = CrossProductVector3(newNode.unitNormal, unitEdgeVector)
+        let distanceFromEdge = DotProductVector3(currentNodeUnitEdgeNormal, vectorToEdge)
+        return AddVector3(AddVector3(edgePointA, MultiplyVector3(unitEdgeVector, distanceFromEdgeStart)), MultiplyVector3(cnextNodeUnitEdgeNormal, distanceFromEdge))
+    }
+
     rotateHeroDirection(angle = 0.0) {
-        this.heroDirection += angle
-        this.heroVector = NormalizeVector3(MultiplyVector3ToMatrix3(this.currentNode.unitTangent, CreateRotationMatrix3(this.currentNode.unitNormal, this.heroDirection)))
+        // this.heroDirection += angle
+        // this.heroVector = NormalizeVector3(MultiplyVector3ToMatrix3(this.currentNode.unitTangent, CreateRotationMatrix3(this.currentNode.unitNormal, this.heroDirection)))
+        this.heroVector = NormalizeVector3(MultiplyVector3ToMatrix3(this.heroVector, CreateRotationMatrix3(this.currentNode.unitNormal, angle)))
     }
 }
