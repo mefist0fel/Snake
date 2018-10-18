@@ -33,19 +33,25 @@ class NavigationNode {
     }
 
     TryAddNeigbhorNode(otherNode) {
-        for (let i = 0; i < otherNode.points.length - 1; i++) {
-            if (this.isCommonEdge(this.pointA, this.pointB, otherNode.points[i], otherNode.points[i + 1])) {
-                console.log("add AB " + this.name + " neigbhor " + otherNode.name)
+        for (let i = 0; i < otherNode.points.length; i++) {
+            let otherPointA = otherNode.points[i]
+            let otherPointB = otherNode.points[(i + 1) % otherNode.points.length]
+            
+            if (this.isCommonEdge(this.pointA, this.pointB, otherPointA, otherPointB)) {
+                // console.log("add AB " + this.name + " neigbhor " + otherNode.name + " : " +
+                //     this.pointA + " " + this.pointB + "=" + otherPointA + " " + otherNode.points[i + 1])
                 this.edgeNeigbhorAB = otherNode
                 return
             }
-            if (this.isCommonEdge(this.pointB, this.pointC, otherNode.points[i], otherNode.points[i + 1])) {
-                console.log("add BC " + this.name + " neigbhor " + otherNode.name)
+            if (this.isCommonEdge(this.pointB, this.pointC, otherPointA, otherPointB)) {
+                // console.log("add BC " + this.name + " neigbhor " + otherNode.name + " : " +
+                //     this.pointB + " " + this.pointC + "=" + otherPointA + " " + otherNode.points[i + 1])
                 this.edgeNeigbhorBC = otherNode
                 return
             }
-            if (this.isCommonEdge(this.pointC, this.pointA, otherNode.points[i], otherNode.points[i + 1])) {
-                console.log("add CA " + this.name + " neigbhor " + otherNode.name)
+            if (this.isCommonEdge(this.pointC, this.pointA, otherPointA, otherPointB)) {
+                // console.log("add CA " + this.name + " neigbhor " + otherNode.name + " : " +
+                //     this.pointC + " " + this.pointA + "=" + otherPointA + " " + otherPointB)
                 this.edgeNeigbhorCA = otherNode
                 return
             }

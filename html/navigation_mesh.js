@@ -10,9 +10,11 @@ class NavigationMesh {
             navigationNodes[i].name = i
         }
         for (let i = 0; i < navigationNodes.length; i++) {
+            // console.log(">>>>> find for node_" + navigationNodes[i].name + " : " + navigationNodes[i].pointA + " " + navigationNodes[i].pointB + " " + navigationNodes[i].pointC)
             for (let j = 0; j < navigationNodes.length; j++) {
                 if (i == j)
                     continue
+                // console.log("check node_" + navigationNodes[j].name + " : " + navigationNodes[j].pointA + " " + navigationNodes[j].pointB + " " + navigationNodes[j].pointC)
                 navigationNodes[i].TryAddNeigbhorNode(navigationNodes[j])
             }
         }
