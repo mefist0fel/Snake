@@ -27,27 +27,30 @@ class NavigationMesh {
     moveHero(distance = 1.0) {
         let position = AddVector3(this.heroPosition, MultiplyVector3(this.heroVector, distance))
         if (this.currentNode.IsOutABEdge(position)) {
-            if (this.currentNode.edgeNeigbhorAB != null)
-                this.moveTo(this.currentNode.edgeNeigbhorAB)
+            if (this.currentNode.edgeNeigbhorAB != null) {
+                this.moveTo(this.currentNode.edgeNeigbhorAB, this.currentNode.pointA, this.currentNode.pointB)
+            }
             return
         }
         if (this.currentNode.IsOutBCEdge(position)) {
-            if (this.currentNode.edgeNeigbhorBC != null)
-                this.moveTo(this.currentNode.edgeNeigbhorBC)
+            if (this.currentNode.edgeNeigbhorBC != null) {
+                this.moveTo(this.currentNode.edgeNeigbhorBC, this.currentNode.pointB, this.currentNode.pointC)
+            }
             return
         }
         if (this.currentNode.IsOutCAEdge(position)) {
-            if (this.currentNode.edgeNeigbhorCA != null)
-                this.moveTo(this.currentNode.edgeNeigbhorCA)
+            if (this.currentNode.edgeNeigbhorCA != null) {
+                this.moveTo(this.currentNode.edgeNeigbhorCA, this.currentNode.pointC, this.currentNode.pointA)
+            }
             return
         }
         this.heroPosition = position
-        //if (this.currentNode.IsInsideTriangle(position))
-        //    this.heroPosition = position
-        //this.heroPosition = AddVector3(this.heroPosition, MultiplyVector3(this.heroVector, distance))
     }
 
-    moveTo(node) {
+    moveTo(node, edgePointA, edgePointB) {
+        let vectorToEdge = SubstractVector3(this.heroPosition, edgePointA)
+        let distanceFromEdgeStart = DotProductVector3(NormalizeVector3(SubstractVector3(edgePointB, edgePointA)), vectorToEdge)
+        // // let distanceFromEdge = DotProductVector3(this.currentNode.edgeNormalAB, vectorToEdge)
         this.currentNode = node
         this.heroPosition = this.currentNode.center
         this.heroVector = this.currentNode.unitTangent

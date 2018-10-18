@@ -21,10 +21,13 @@ class NavigationNode {
         let vectorBC = SubstractVector3(vectorC, vectorB)
         let vectorCA = SubstractVector3(vectorA, vectorC)
         this.edgePointAB = this.pointA
+        this.edgeUnitAB = NormalizeVector3(vectorAB)
         this.edgeNormalAB = NormalizeVector3(CrossProductVector3(this.unitNormal, vectorAB))
         this.edgePointBC = this.pointB
+        this.edgeUnitBC = NormalizeVector3(vectorBC)
         this.edgeNormalBC = NormalizeVector3(CrossProductVector3(this.unitNormal, vectorBC))
         this.edgePointCA = this.pointC
+        this.edgeUnitCA = NormalizeVector3(vectorCA)
         this.edgeNormalCA = NormalizeVector3(CrossProductVector3(this.unitNormal, vectorCA))
 
         this.edgeNeigbhorAB = null
@@ -75,19 +78,6 @@ class NavigationNode {
 
     IsOutCAEdge(point) {
         return (this.GetDistanceToEdge(point, this.edgePointCA, this.edgeNormalCA) < 0)
-    }
-
-    IsInsideTriangle(point) {
-        if (this.GetDistanceToEdge(point, this.edgePointAB, this.edgeNormalAB) < 0) {
-            return false
-        }
-        if (this.GetDistanceToEdge(point, this.edgePointBC, this.edgeNormalBC) < 0) {
-            return false
-        }
-        if (this.GetDistanceToEdge(point, this.edgePointCA, this.edgeNormalCA) < 0) {
-            return false
-        }
-        return true
     }
 
     GetDistanceToEdge(point, edgePoint, edgeUnitNormal) {
