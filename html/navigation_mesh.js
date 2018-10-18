@@ -4,6 +4,7 @@ class NavigationMesh {
         this.currentNode = this.nodes[startNodeId]
         this.heroPosition = this.currentNode.center
         this.heroVector = this.currentNode.unitTangent
+        this.heroNormal = this.currentNode.unitNormal
         // find neigbhors
         for (let i = 0; i < navigationNodes.length; i++) {
             navigationNodes[i].name = i
@@ -51,6 +52,7 @@ class NavigationMesh {
         this.currentNode = node
         this.heroPosition = newHeroPosition
         this.heroVector = newHeroVector
+        this.heroNormal = this.currentNode.unitNormal
     }
 
     FindPositionOnDifferentNode(currentNode, newNode, position, edgePointA, edgePointB) {

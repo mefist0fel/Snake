@@ -63,23 +63,27 @@
 
 	let navigationMesh = new NavigationMesh(navigationNodes)
 	// objects = []
+	let navigationObjects = []
+	let debugButtonPressed = false
+	let needShowDebugInfo = false
 	for(let i = 0; i < navigationNodes.length; i++) {
-		objects.push(
+		let navigationTriangle = 
 			new Object3DTriangle(
 				navigationNodes[i].pointA,
 				navigationNodes[i].pointB,
 				navigationNodes[i].pointC,
 				"rgb(255,255,255)", false, false
 			)
-		)
+		objects.push(navigationTriangle)
+		navigationObjects.push(navigationTriangle)
 	}
 
-// test
+	ShowDebugInfo(needShowDebugInfo)
 	let heroView = new Object3D(navigationMesh.heroPosition, 0.5, rgbToHex(255, 0, 0))
+	let currentCameraDirection = navigationMesh.heroNormal
 	objects.push(heroView)
 	let targetView = new Object3D(AddVector3(navigationMesh.heroPosition, navigationMesh.heroVector), 0.2, rgbToHex(0, 0, 255))
 	objects.push(targetView)
-
 
 	// init
 	let canvasElement = document.getElementById('snake')
@@ -162,12 +166,29 @@
 		// 	heroView.color = rgbToHex(255, 0, 0)
 		// }
 		heroView.position = navigationMesh.heroPosition
+		camera.position = SubstractVector3(CreateVector3(0.0, 0.0, 0.0), heroView.position)
 		targetView.position = AddVector3(navigationMesh.heroPosition, navigationMesh.heroVector)
 		// camera.worldMatrix = MultiplyMatrix3(CreateMatrix3RotatedX(y), CreateMatrix3RotatedY(x))
 		camera.worldMatrix = MultiplyMatrix3(CreateRotationMatrix3(CreateVector3(1.0), y), CreateRotationMatrix3(CreateVector3(0.0, 1.0), x))
 		if (input.key[32]) { // space
 		}
+		if (input.key[113]) { // F2
+			if (!debugButtonPressed) {
+				debugButtonPressed = true
+				needShowDebugInfo = !needShowDebugInfo
+				ShowDebugInfo(needShowDebugInfo)
+			}
+		} else {
+			debugButtonPressed = false
+		}
 	}
+	
+	function ShowDebugInfo(needShow) {
+		for(let i = 0; i < navigationObjects.length; i++) {
+			navigationObjects[i].enabled = needShow;
+		}
+	}
+
 	function frame() {
 		now = timestamp()
 		dt = dt + Math.min(1, (now - time) / 1000)

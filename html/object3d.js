@@ -34,6 +34,7 @@ class Object3DTriangle {
 		this.color = color
 		this.ignoreBackface = ignoreBackface
 		this.filled = filled
+		this.enabled = true
 	}
 	
 	prepareScene (camera) {
@@ -44,6 +45,8 @@ class Object3DTriangle {
 	}
 
 	draw (canvas) {
+		if (!this.enabled)
+			return
 		if (this.ignoreBackface) {
 			var dot = PointToLine(this.screenPoints[0], this.screenPoints[1], this.screenPoints[2])
 			if (dot > 0)

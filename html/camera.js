@@ -6,10 +6,12 @@ class Camera {
         this.projectionMatrix = CreateProjectionMatrix4(1.0, 1.0, 1.0, 2.0)
         this.centerOffcet = CreateVector3(width * 0.5, height * 0.5)
         this.cameraPosition = CreateVector3(0.0, 0.0, 20.0)
+        this.position = CreateVector3(0.0, 0.0, 0.0)
     }
 
     worldToScreenVector3 (point) {
         let worldPoint = point
+        worldPoint = AddVector3(worldPoint, this.position)
         worldPoint = MultiplyVector3ToMatrix3(worldPoint, this.worldMatrix)
         worldPoint = AddVector3(worldPoint, this.cameraPosition)
         worldPoint = MultiplyVector3ToMatrix4(worldPoint, this.projectionMatrix)
@@ -19,6 +21,7 @@ class Camera {
 
     worldToScreenVector3WithOffcet (point, offcet) {
         let worldPoint = point
+        worldPoint = AddVector3(worldPoint, this.position)
         worldPoint = MultiplyVector3ToMatrix3(worldPoint, this.worldMatrix)
         worldPoint = AddVector3(worldPoint, this.cameraPosition)
         worldPoint = AddVector3(worldPoint, offcet)
