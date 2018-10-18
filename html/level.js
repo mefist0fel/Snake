@@ -101,7 +101,7 @@ function createDrawedCube(size = 5) {
 	 	for (let j = -size; j < size; j++) {
             let color = '#FFFFFF'
             if ((parseInt(size + i * 0.5 + 0.5) + parseInt(size + j * 0.5 + 0.5)) % 2 == 1)
-                color = '#666666'
+                color = '#AAAAAA'
             // forw
             let af = CreateVector3( i    , j    , size)
             let bf = CreateVector3( i + 1, j    , size)
@@ -116,6 +116,9 @@ function createDrawedCube(size = 5) {
             let db = CreateVector3( i    , j + 1,-size)
             objects.push(new Object3DTriangle(ab, cb, bb, color))
             objects.push(new Object3DTriangle(ab, db, cb, color))
+            color = '#DDDDDD'
+            if ((parseInt(size + i * 0.5 + 0.5) + parseInt(size + j * 0.5 + 0.5)) % 2 == 1)
+                color = '#888888'
             // top
             let at = CreateVector3( i    , size, j    )
             let bt = CreateVector3( i + 1, size, j    )
@@ -130,6 +133,9 @@ function createDrawedCube(size = 5) {
             let dd = CreateVector3( i    , -size, j + 1)
             objects.push(new Object3DTriangle(ad, bd, cd, color))
             objects.push(new Object3DTriangle(ad, cd, dd, color))
+            color = '#BBBBBB'
+            if ((parseInt(size + i * 0.5 + 0.5) + parseInt(size + j * 0.5 + 0.5)) % 2 == 1)
+                color = '#666666'
             // left
             let al = CreateVector3(-size, i    , j    )
             let bl = CreateVector3(-size, i + 1, j    )

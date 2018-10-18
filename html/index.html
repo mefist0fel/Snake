@@ -39,8 +39,8 @@
 
 	width = document.documentElement.clientWidth
 	height = document.documentElement.clientHeight
-	let x = 45.0
-	let y = -45.0
+	let x = 180 + 45.0
+	let y = -45.0 + 22.5
 	let upVector = CreateVector3(0, 1)
 	let rightVector = CreateVector3(1, 0)
 
@@ -63,20 +63,9 @@
 
 	let navigationMesh = new NavigationMesh(navigationNodes)
 	// objects = []
-	let navigationObjects = []
+	let navigationObjects = null
 	let debugButtonPressed = false
 	let needShowDebugInfo = false
-	for(let i = 0; i < navigationNodes.length; i++) {
-		let navigationTriangle = 
-			new Object3DTriangle(
-				navigationNodes[i].pointA,
-				navigationNodes[i].pointB,
-				navigationNodes[i].pointC,
-				"rgb(255,255,255)", false, false
-			)
-		objects.push(navigationTriangle)
-		navigationObjects.push(navigationTriangle)
-	}
 
 	ShowDebugInfo(needShowDebugInfo)
 	let heroView = new Object3D(navigationMesh.heroPosition, 0.5, rgbToHex(255, 0, 0))
@@ -115,7 +104,7 @@
 		// help
 		canvas.fillStyle    = '#FFFFFF'  // white
 		canvas.font = "14pt Arial"
-		canvas.fillText("test", 10, 30)
+		// canvas.fillText("test", 10, 30)
 		// canvas.fillText("Z / X - change height constant", 10, 50)
 		// canvas.fillText("C / V - change tile aspect", 10, 70)
 		// canvas.fillText("Camera angle " + camera.angle, 10, 90)
@@ -134,40 +123,36 @@
 		// space = 32
 		let moveSpeed = 2.0 * dt
 		let rotateSpeed = 60.0 * dt
-		if (input.key[38] || input.key[87]) { // UP | W
+		if (input.key[87]) {// || input.key[38]) { // UP | W
 			navigationMesh.moveHero(moveSpeed)
 		}
-		if (input.key[40] || input.key[83]) { // DOWN | S
+		if (input.key[83]) {// || input.key[40]) { // DOWN | S
 			navigationMesh.moveHero(-moveSpeed)
 		}
-		if (input.key[37] || input.key[65]) { // LEFT | A
+		if (input.key[65]) {// || input.key[37]) { // LEFT | A
 			navigationMesh.rotateHeroDirection(rotateSpeed)
 		}
-		if (input.key[39] || input.key[68]) { // RIGHT | D
+		if (input.key[68]) {// || input.key[39]) { // RIGHT | D
 			navigationMesh.rotateHeroDirection(-rotateSpeed)
 		}
 
 		let speed = 60.0 * dt
-		if (input.key[33]) { // Page UP
+		if (input.key[33] || input.key[38]) { // Page UP
 			y -= speed
 		}
-		if (input.key[34]) { // Page DOWN
+		if (input.key[34] || input.key[40]) { // Page DOWN
 			y += speed
 		}
-		if (input.key[35]) { // HOME
+		if (input.key[35] || input.key[37]) { // HOME
 			x -= speed
 		}
-		if (input.key[36]) { // End
+		if (input.key[36] || input.key[39]) { // End
 			x += speed
 		}
-		// if (nav.IsInsideTriangle(navigationMesh.heroPosition)) {
-		// 	heroView.color = rgbToHex(0, 255, 0)
-		// } else {
-		// 	heroView.color = rgbToHex(255, 0, 0)
-		// }
 		heroView.position = navigationMesh.heroPosition
 		camera.position = SubstractVector3(CreateVector3(0.0, 0.0, 0.0), heroView.position)
 		targetView.position = AddVector3(navigationMesh.heroPosition, navigationMesh.heroVector)
+		let currentCameraDirection = navigationMesh.heroNormal
 		// camera.worldMatrix = MultiplyMatrix3(CreateMatrix3RotatedX(y), CreateMatrix3RotatedY(x))
 		camera.worldMatrix = MultiplyMatrix3(CreateRotationMatrix3(CreateVector3(1.0), y), CreateRotationMatrix3(CreateVector3(0.0, 1.0), x))
 		if (input.key[32]) { // space
@@ -184,6 +169,20 @@
 	}
 	
 	function ShowDebugInfo(needShow) {
+		if (navigationObjects == null) {
+			navigationObjects = []
+			for(let i = 0; i < navigationNodes.length; i++) {
+				let navigationTriangle = 
+					new Object3DTriangle(
+						navigationNodes[i].pointA,
+						navigationNodes[i].pointB,
+						navigationNodes[i].pointC,
+						"rgb(255,255,255)", false, false
+					)
+				objects.push(navigationTriangle)
+				navigationObjects.push(navigationTriangle)
+			}
+		}
 		for(let i = 0; i < navigationObjects.length; i++) {
 			navigationObjects[i].enabled = needShow;
 		}
