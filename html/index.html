@@ -39,8 +39,8 @@
 
 	width = document.documentElement.clientWidth
 	height = document.documentElement.clientHeight
-	let x = 0.0 // 45.0
-	let y = 0.0 //-45.0
+	let x = 45.0
+	let y = -45.0
 	let upVector = CreateVector3(0, 1)
 	let rightVector = CreateVector3(1, 0)
 
@@ -48,36 +48,21 @@
 
 	let objects = createDrawedCube()
 
-	let navigationNodes = [
-		new NavigationNode(
-			CreateVector3(-5.0, 0.0, 0.0),
-			CreateVector3( 0.0, 5.0, 2.0),
-			CreateVector3( 5.0, 0.0, 0.0)
-		),
-		new NavigationNode(
-			CreateVector3( 5.0, 0.0, 0.0),
-			CreateVector3( 0.0, 5.0, 2.0),
-			CreateVector3( 7.0, 5.0, 5.0)
-		),
-		new NavigationNode(
-			CreateVector3( 0.0, 5.0, 2.0),
-			CreateVector3(-5.0, 0.0, 0.0),
-			CreateVector3(-7.0, 5.0, 5.0)
-		),
-		new NavigationNode(
-			CreateVector3(-5.0, 0.0, 0.0),
-			CreateVector3( 5.0, 0.0, 0.0),
-			CreateVector3( 0.0,-5.0, 2.0)
-		),
-		new NavigationNode(
-			CreateVector3(-7.0, 5.0, 5.0),
-			CreateVector3( 7.0, 5.0, 5.0),
-			CreateVector3( 0.0, 5.0, 2.0)
+	let navigationTriangles = CreateNavigationCube(10.0 + 1.0)
+	let navigationNodes = []
+	for(let i = 0; i < navigationTriangles.length; i++) {
+		let points = navigationTriangles[i]
+		navigationNodes.push(
+			new NavigationNode(
+				points[0],
+				points[1],
+				points[2]
+			)
 		)
-	]
+	}
 
 	let navigationMesh = new NavigationMesh(navigationNodes)
-	objects = []
+	// objects = []
 	for(let i = 0; i < navigationNodes.length; i++) {
 		objects.push(
 			new Object3DTriangle(

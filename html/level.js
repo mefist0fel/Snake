@@ -49,6 +49,52 @@ function createCube(size = 10.0) {
     return objects
 }
 
+function CreateNavigationCube(size = 10.0, navigationRadius = 0.5, edgePolyCount = 3) {
+    let s = size * 0.5
+    let points = [
+        CreateVector3( s, s, s), // 0
+        CreateVector3( s,-s, s), // 1
+        CreateVector3(-s, s, s), // 2
+        CreateVector3(-s,-s, s), // 3
+        CreateVector3( s, s,-s), // 4
+        CreateVector3( s,-s,-s), // 5
+        CreateVector3(-s, s,-s), // 6
+        CreateVector3(-s,-s,-s)  // 7
+    ]
+    return pointsByIds(points, [
+        // up
+        [0, 2, 1],
+        [1, 2, 3],
+        // down
+        [4, 5, 6],
+        [5, 7, 6],
+        // left
+        [0, 6, 2],
+        [0, 4, 6],
+        // right
+        [1, 3, 7],
+        [1, 7, 5],
+        // forw
+        [0, 1, 5],
+        [0, 5, 4],
+        // backw
+        [2, 6, 7],
+        [2, 7, 3]
+    ])
+}
+
+function pointsByIds(points, faceIds) {
+    let mesh = []
+    for(let i = 0; i < faceIds.length; i++) {
+        mesh.push([
+            points[faceIds[i][0]],
+            points[faceIds[i][1]],
+            points[faceIds[i][2]]
+        ])
+    }
+    return mesh
+}
+
 function createDrawedCube(size = 5) {
 	let objects = []
 	for (let i = -size; i < size; i++) {
