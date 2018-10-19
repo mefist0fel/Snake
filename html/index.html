@@ -157,17 +157,16 @@
 		targetView.position = AddVector3(navigationMesh.heroPosition, navigationMesh.heroVector)
 		//let currentCameraDirection = navigationMesh.heroNormal
 	//let currentMatrix = CreateUnitMatrix3()
-		let currentCameraDirection = MultiplyVector3ToMatrix3(defaultCameraDirection, currentMatrix)
-		let needCameraDirection = CreateVector3(navigationMesh.heroNormal[0], navigationMesh.heroNormal[1], navigationMesh.heroNormal[2])
-		let rotationAxe = AxeBetweenVector3(currentCameraDirection, needCameraDirection)
-		let rotationAngle = AngleBetweenVector3(currentCameraDirection, needCameraDirection)
-		let rotationSpeed = 60.0 * dt
-		let moveMatrix = CreateRotationMatrix3(rotationAxe, Math.min(rotationSpeed, rotationAngle))
-		// console.log(needCameraDirection)
-		currentMatrix = MultiplyMatrix3(moveMatrix, currentMatrix)
-		camera.worldMatrix = currentMatrix
+		// let currentCameraDirection = MultiplyVector3ToMatrix3(defaultCameraDirection, currentMatrix)
+		// let needCameraDirection = CreateVector3(navigationMesh.heroNormal[0], navigationMesh.heroNormal[1], navigationMesh.heroNormal[2])
+		// let rotationAxe = AxeBetweenVector3(currentCameraDirection, needCameraDirection)
+		// let rotationAngle = AngleBetweenVector3(currentCameraDirection, needCameraDirection)
+		// let rotationSpeed = 60.0 * dt
+		// let moveMatrix = CreateRotationMatrix3(rotationAxe, Math.min(rotationSpeed, rotationAngle))
+		// currentMatrix = MultiplyMatrix3(moveMatrix, currentMatrix)
+		//camera.worldMatrix = currentMatrix
 		// camera.worldMatrix = MultiplyMatrix3(CreateMatrix3RotatedX(y), CreateMatrix3RotatedY(x))
-		//camera.worldMatrix = MultiplyMatrix3(CreateRotationMatrix3(CreateVector3(1.0), y), CreateRotationMatrix3(CreateVector3(0.0, 1.0), x))
+		camera.worldMatrix = MultiplyMatrix3(CreateRotationMatrix3(CreateVector3(1.0), y), CreateRotationMatrix3(CreateVector3(0.0, 1.0), x))
 		if (input.key[32]) { // space
 		}
 		if (input.key[113]) { // F2

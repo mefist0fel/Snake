@@ -155,7 +155,7 @@ function createDrawedCube(size = 5) {
     return objects
 }
 
-function createSphere(radius = 10.0, segments = 7) {
+function createSphere(radius = 5.0, segments = 7) {
     let objects = []
     let size = 1.0 / (segments)
     let createNormalizedPoint = function(x, y, size, radius, sideMatrix) {
@@ -197,6 +197,7 @@ function createSphere(radius = 10.0, segments = 7) {
 function CreateNavigationSphere(radius = 5.0, navigationRadius = 0.5, segments = 7) {
     let navigationTriangles = []
     let size = 1.0 / (segments)
+    let fullRadius = radius + navigationRadius
     let createNormalizedPoint = function(x, y, size, radius, sideMatrix) {
         let point = CreateVector3(x * size - 0.5, y * size - 0.5, 0.5)
         return MultiplyVector3ToMatrix3(
@@ -216,10 +217,10 @@ function CreateNavigationSphere(radius = 5.0, navigationRadius = 0.5, segments =
     for(let sideId = 0; sideId < sidesRotationMatrix.length; sideId ++) {
         for (let i = 0; i < segments; i++) {
             for (let j = 0; j < segments; j++) {
-                let af = createNormalizedPoint(     i,     j, size, radius, sidesRotationMatrix[sideId])
-                let bf = createNormalizedPoint( i + 1,     j, size, radius, sidesRotationMatrix[sideId])
-                let cf = createNormalizedPoint( i + 1, j + 1, size, radius, sidesRotationMatrix[sideId])
-                let df = createNormalizedPoint(     i, j + 1, size, radius, sidesRotationMatrix[sideId])
+                let af = createNormalizedPoint(     i,     j, size, fullRadius, sidesRotationMatrix[sideId])
+                let bf = createNormalizedPoint( i + 1,     j, size, fullRadius, sidesRotationMatrix[sideId])
+                let cf = createNormalizedPoint( i + 1, j + 1, size, fullRadius, sidesRotationMatrix[sideId])
+                let df = createNormalizedPoint(     i, j + 1, size, fullRadius, sidesRotationMatrix[sideId])
                 navigationTriangles.push([af, bf, cf])
                 navigationTriangles.push([af, cf, df])
             }
