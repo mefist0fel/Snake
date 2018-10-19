@@ -69,6 +69,14 @@ function DotProductVector3(a, b) {
 	return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 }
 
+function AngleBetweenVector3(a, b) {
+	return Math.acos(DotProductVector3(NormalizeVector3(a), NormalizeVector3(b))) / Math.PI * 180.0
+}
+
+function AxeBetweenVector3(a, b) {
+	return NormalizeVector3(CrossProductVector3(NormalizeVector3(a), NormalizeVector3(b)))
+}
+
 function IsEqualVector3(a, b) {
 	let sigma = 0.001
 	return DistanceVector3(a, b) < sigma
