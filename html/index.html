@@ -26,6 +26,7 @@
 	<script type="text/javascript" src="level.js"></script>
 	<script type="text/javascript" src="navigation_mesh.js"></script>
 	<script type="text/javascript" src="navigation_node.js"></script>
+	<script type="text/javascript" src="apple.js"></script>
 	<!--
 	<script type="text/javascript" src="jsfxr.js"></script>
 	<script type="text/javascript" src="audio.js"></script>-->
@@ -41,6 +42,7 @@
 	height = document.documentElement.clientHeight
 	let x = 0.0 // 180 + 45.0
 	let y = 0.0 // -45.0 + 22.5
+	let applesCount = 1
 	let upVector = CreateVector3(0, 1)
 	let rightVector = CreateVector3(1, 0)
 
@@ -65,6 +67,11 @@
 	}
 
 	let navigationMesh = new NavigationMesh(navigationNodes)
+	// let apples = [
+	// 	new Apple(navigationMesh.getRandomPosition()),
+	// 	new Apple(navigationMesh.getRandomPosition()),
+	// 	new Apple(navigationMesh.getRandomPosition())
+	// ]
 
 	let navigationObjects = null
 	let debugButtonPressed = false
@@ -110,7 +117,7 @@
 		// help
 		canvas.fillStyle    = '#FFFFFF'  // white
 		canvas.font = "14pt Arial"
-		// canvas.fillText("test", 10, 30)
+		canvas.fillText("Apples " + applesCount, 30, 30)
 		// canvas.fillText("Z / X - change height constant", 10, 50)
 		// canvas.fillText("C / V - change tile aspect", 10, 70)
 		// canvas.fillText("Camera angle " + camera.angle, 10, 90)

@@ -7,7 +7,7 @@ class Camera {
         this.centerOffcet = CreateVector3(width * 0.5, height * 0.5)
         this.cameraPosition = CreateVector3(0.0, 0.0, 20.0)
         this.position = CreateVector3(0.0, 0.0, 0.0)
-        this.screenScale = 1000.0
+        this.screenScale = 800.0
     }
 
     worldToScreenVector3 (point) {

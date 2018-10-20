@@ -155,7 +155,7 @@ function createDrawedCube(size = 5) {
     return objects
 }
 
-function createSphere(radius = 5.0, segments = 7) {
+function createSphere(radius = 5.0, segments = 9) {
     let objects = []
     let size = 1.0 / (segments)
     let createNormalizedPoint = function(x, y, size, radius, sideMatrix) {
@@ -198,7 +198,7 @@ function createSphere(radius = 5.0, segments = 7) {
     return objects
 }
 
-function CreateNavigationSphere(radius = 5.0, navigationRadius = 0.5, segments = 7) {
+function CreateNavigationSphere(radius = 5.0, navigationRadius = 0.5, segments = 9) {
     let navigationTriangles = []
     let size = 1.0 / (segments)
     let fullRadius = radius + navigationRadius
