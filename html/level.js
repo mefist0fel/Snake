@@ -177,15 +177,19 @@ function createSphere(radius = 5.0, segments = 7) {
     for(let sideId = 0; sideId < sidesRotationMatrix.length; sideId ++) {
         for (let i = 0; i < segments; i++) {
             for (let j = 0; j < segments; j++) {
-                let color = '#FFFFFF'
-                if ((i + j) % 2 == 1)
-                    color = '#666666'
                 
                 // forw
                 let af = createNormalizedPoint(     i,     j, size, radius, sidesRotationMatrix[sideId])
                 let bf = createNormalizedPoint( i + 1,     j, size, radius, sidesRotationMatrix[sideId])
                 let cf = createNormalizedPoint( i + 1, j + 1, size, radius, sidesRotationMatrix[sideId])
                 let df = createNormalizedPoint(     i, j + 1, size, radius, sidesRotationMatrix[sideId])
+                let normal = createNormalizedPoint(i + 0.5, j + 0.5, size, 1.0, sidesRotationMatrix[sideId])
+                let fakeLight = normal[0] * 0.5 + 0.5
+                let lightColor = parseInt((fakeLight * 0.6 + 0.4) * 255.0)
+                let darkColor = parseInt((fakeLight * 0.6 + 0.4) * 195.0)
+                let color = rgbToHex(lightColor, lightColor, lightColor)
+                if ((i + j) % 2 == 1)
+                    color = rgbToHex(darkColor, darkColor, darkColor)
                 objects.push(new Object3DTriangle(af, bf, cf, color))
                 objects.push(new Object3DTriangle(af, cf, df, color))
             }

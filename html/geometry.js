@@ -99,14 +99,17 @@ function DistanceVector3(a, b) {
 }
 
 function NormalizeVector3(v) {
-	var dist = 1.0 / Vector3Length(v);
+	let dist = 1.0 / Vector3Length(v)
+	if (dist == NaN) {
+		dist = Number.MAX_VALUE
+	}
 	if (dist == Infinity) {
-		dist = Number.MAX_VALUE;
+		dist = Number.MAX_VALUE
 	}
 	if (dist == -Infinity) {
-		dist = Number.MIN_VALUE;
+		dist = Number.MIN_VALUE
 	}
-	return MultiplyVector3(v, dist);
+	return MultiplyVector3(v, dist)
 }
 
 function FindMiddlePoint (points) {

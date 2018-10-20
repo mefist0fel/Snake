@@ -7,6 +7,7 @@ class Camera {
         this.centerOffcet = CreateVector3(width * 0.5, height * 0.5)
         this.cameraPosition = CreateVector3(0.0, 0.0, 20.0)
         this.position = CreateVector3(0.0, 0.0, 0.0)
+        this.screenScale = 1000.0
     }
 
     worldToScreenVector3 (point) {
@@ -15,7 +16,7 @@ class Camera {
         worldPoint = MultiplyVector3ToMatrix3(worldPoint, this.worldMatrix)
         worldPoint = AddVector3(worldPoint, this.cameraPosition)
         worldPoint = MultiplyVector3ToMatrix4(worldPoint, this.projectionMatrix)
-        worldPoint = MultiplyVector3(worldPoint, 500.0)
+        worldPoint = MultiplyVector3(worldPoint, this.screenScale)
         return AddVector3(worldPoint, this.centerOffcet)
     }
 
@@ -26,7 +27,7 @@ class Camera {
         worldPoint = AddVector3(worldPoint, this.cameraPosition)
         worldPoint = AddVector3(worldPoint, offcet)
         worldPoint = MultiplyVector3ToMatrix4(worldPoint, this.projectionMatrix)
-        worldPoint = MultiplyVector3(worldPoint, 500.0)
+        worldPoint = MultiplyVector3(worldPoint, this.screenScale)
         return AddVector3(worldPoint, this.centerOffcet)
     }
 }

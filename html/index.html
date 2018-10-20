@@ -39,19 +39,19 @@
 
 	width = document.documentElement.clientWidth
 	height = document.documentElement.clientHeight
-	let x = 180 + 45.0
-	let y = -45.0 + 22.5
+	let x = 0.0 // 180 + 45.0
+	let y = 0.0 // -45.0 + 22.5
 	let upVector = CreateVector3(0, 1)
 	let rightVector = CreateVector3(1, 0)
 
 	let currentMatrix = CreateUnitMatrix3()
-	let defaultCameraDirection = CreateVector3(0, -1.0, 0)
+	let defaultCameraDirection = CreateVector3(0.0, 0.0, -1.0)
 
 	let camera = new Camera(width, height)
 
 	let objects = createSphere()// createDrawedCube()
 
-	let navigationTriangles = CreateNavigationSphere() // CreateNavigationCube(10.0 + 1.0)
+	let navigationTriangles = CreateNavigationSphere() // CreateNavigationCube(11.0)
 	let navigationNodes = []
 	for(let i = 0; i < navigationTriangles.length; i++) {
 		let points = navigationTriangles[i]
@@ -65,7 +65,7 @@
 	}
 
 	let navigationMesh = new NavigationMesh(navigationNodes)
-	// objects = []
+
 	let navigationObjects = null
 	let debugButtonPressed = false
 	let needShowDebugInfo = false
@@ -76,6 +76,9 @@
 	objects.push(heroView)
 	let targetView = new Object3D(AddVector3(navigationMesh.heroPosition, navigationMesh.heroVector), 0.2, rgbToHex(0, 0, 255))
 	objects.push(targetView)
+	// objects.push(new Object3D(CreateVector3(8.0, 0.0, 0.0), 0.5, rgbToHex(255, 0, 0)))
+	// objects.push(new Object3D(CreateVector3(0.0, 8.0, 0.0), 0.5, rgbToHex(0, 255, 0)))
+	// objects.push(new Object3D(CreateVector3(0.0, 0.0, 8.0), 0.5, rgbToHex(0, 0, 255)))
 
 	// init
 	let canvasElement = document.getElementById('snake')
@@ -153,20 +156,20 @@
 			x += speed
 		}
 		heroView.position = navigationMesh.heroPosition
-		camera.position = SubstractVector3(CreateVector3(0.0, 0.0, 0.0), heroView.position)
 		targetView.position = AddVector3(navigationMesh.heroPosition, navigationMesh.heroVector)
-		//let currentCameraDirection = navigationMesh.heroNormal
-	//let currentMatrix = CreateUnitMatrix3()
-		// let currentCameraDirection = MultiplyVector3ToMatrix3(defaultCameraDirection, currentMatrix)
-		// let needCameraDirection = CreateVector3(navigationMesh.heroNormal[0], navigationMesh.heroNormal[1], navigationMesh.heroNormal[2])
-		// let rotationAxe = AxeBetweenVector3(currentCameraDirection, needCameraDirection)
-		// let rotationAngle = AngleBetweenVector3(currentCameraDirection, needCameraDirection)
-		// let rotationSpeed = 60.0 * dt
-		// let moveMatrix = CreateRotationMatrix3(rotationAxe, Math.min(rotationSpeed, rotationAngle))
-		// currentMatrix = MultiplyMatrix3(moveMatrix, currentMatrix)
-		//camera.worldMatrix = currentMatrix
-		// camera.worldMatrix = MultiplyMatrix3(CreateMatrix3RotatedX(y), CreateMatrix3RotatedY(x))
-		camera.worldMatrix = MultiplyMatrix3(CreateRotationMatrix3(CreateVector3(1.0), y), CreateRotationMatrix3(CreateVector3(0.0, 1.0), x))
+		camera.position = SubstractVector3(CreateVector3(0.0, 0.0, 0.0), heroView.position)
+
+		let cameraVector = NormalizeVector3(heroView.position)
+		let XZVector = NormalizeVector2([cameraVector[0], cameraVector[2]])
+		let YNVector = NormalizeVector2([cameraVector[1], Math.sqrt(cameraVector[0], cameraVector[2])])
+		let baseAngle = Math.acos(XZVector[0]) / Math.PI * 180.0
+		let upAngle = Math.acos(cameraVector[1]) / Math.PI * 180.0 - 90.0
+		if (cameraVector[2] > 0) {
+		 	baseAngle += 90.0
+		} else {
+		 	baseAngle = 90.0 - baseAngle
+		}
+		camera.worldMatrix = MultiplyMatrix3(CreateRotationMatrix3(CreateVector3(1.0), upAngle), CreateRotationMatrix3(CreateVector3(0.0, 1.0), baseAngle))
 		if (input.key[32]) { // space
 		}
 		if (input.key[113]) { // F2
