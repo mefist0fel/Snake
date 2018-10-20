@@ -6,6 +6,8 @@ class Object3D {
 		this.color = color
 		this.radiusPositionVector = CreateVector3(radius)
 		this.screenRadius = 10.0
+		this.enabled = true
+		Camera.instance.objects.push(this)
 	}
 
 	setRadius(radius) {
@@ -13,6 +15,8 @@ class Object3D {
 	}
 	
 	prepareScene (camera) {
+		if (!this.enabled)
+			return
 		this.screenPosition = camera.worldToScreenVector3(this.position)
 		let screenRadiusPosition = camera.worldToScreenVector3WithOffcet(this.position, this.radiusPositionVector)
 		let screenRadiusVector = SubstractVector3(this.screenPosition, screenRadiusPosition)
@@ -20,6 +24,8 @@ class Object3D {
 	}
 
 	draw (canvas) {
+		if (!this.enabled)
+			return
 		canvas.fillStyle = this.color
 		canvas.beginPath()
 		canvas.arc(this.screenPosition[0], this.screenPosition[1], this.screenRadius, 0, 2.0 * Math.PI);
@@ -38,9 +44,12 @@ class Object3DTriangle {
 		this.ignoreBackface = ignoreBackface
 		this.filled = filled
 		this.enabled = true
+		Camera.instance.objects.push(this)
 	}
 	
 	prepareScene (camera) {
+		if (!this.enabled)
+			return
 		this.screenPosition = camera.worldToScreenVector3(this.position)
 		for(let i = 0; i < this.screenPoints.length; i++) {
 			this.screenPoints[i] = camera.worldToScreenVector3(this.points[i])

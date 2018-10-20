@@ -1,4 +1,3 @@
-// Apple class
 class Apple {
     constructor(positionVector3, radius = 0.4, animSpeed = 3.0) {
 		this.position = positionVector3

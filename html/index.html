@@ -27,6 +27,7 @@
 	<script type="text/javascript" src="navigation_mesh.js"></script>
 	<script type="text/javascript" src="navigation_node.js"></script>
 	<script type="text/javascript" src="apple.js"></script>
+	<script type="text/javascript" src="snake.js"></script>
 	<!--
 	<script type="text/javascript" src="jsfxr.js"></script>
 	<script type="text/javascript" src="audio.js"></script>-->
@@ -40,6 +41,15 @@
 
 	width = document.documentElement.clientWidth
 	height = document.documentElement.clientHeight
+
+	// init
+	let canvasElement = document.getElementById('snake')
+	let canvas = canvasElement.getContext('2d')
+	canvasElement.width = width
+	canvasElement.height = height
+	rect = canvasElement.getBoundingClientRect()
+
+
 	let x = 0.0 // 180 + 45.0
 	let y = 0.0 // -45.0 + 22.5
 	let applesCount = 1
@@ -49,9 +59,9 @@
 	let currentMatrix = CreateUnitMatrix3()
 	let defaultCameraDirection = CreateVector3(0.0, 0.0, -1.0)
 
-	let camera = new Camera(width, height)
+	let camera = new Camera(width, height, canvas)
 
-	let objects = createSphere()// createDrawedCube()
+	createSphere()// createDrawedCube()
 
 	let navigationTriangles = CreateNavigationSphere() // CreateNavigationCube(11.0)
 	let navigationNodes = []
@@ -72,31 +82,17 @@
 		new Apple(navigationMesh.getRandomPosition()),
 		new Apple(navigationMesh.getRandomPosition())
 	]
-
-	for(let i = 0; i < apples.length; i++) {
-		objects.push(apples[i].object3d)
-	}
+	let snake = new Snake(navigationMesh)
 
 	let navigationObjects = null
 	let debugButtonPressed = false
 	let needShowDebugInfo = false
 
 	ShowDebugInfo(needShowDebugInfo)
-	let heroView = new Object3D(navigationMesh.heroPosition, 0.5, rgbToHex(60, 128, 60))
-	let currentCameraDirection = navigationMesh.heroNormal
-	objects.push(heroView)
-	let targetView = new Object3D(AddVector3(navigationMesh.heroPosition, navigationMesh.heroVector), 0.2, rgbToHex(0, 0, 255))
-	objects.push(targetView)
-	// objects.push(new Object3D(CreateVector3(8.0, 0.0, 0.0), 0.5, rgbToHex(255, 0, 0)))
-	// objects.push(new Object3D(CreateVector3(0.0, 8.0, 0.0), 0.5, rgbToHex(0, 255, 0)))
-	// objects.push(new Object3D(CreateVector3(0.0, 0.0, 8.0), 0.5, rgbToHex(0, 0, 255)))
 
-	// init
-	let canvasElement = document.getElementById('snake')
-	let canvas = canvasElement.getContext('2d')
-	canvasElement.width = width
-	canvasElement.height = height
-	rect = canvasElement.getBoundingClientRect()
+	// let heroView = new Object3D(navigationMesh.heroPosition, 0.5, rgbToHex(60, 128, 60))
+	// let targetView = new Object3D(AddVector3(navigationMesh.heroPosition, navigationMesh.heroVector), 0.2, rgbToHex(0, 0, 255))
+
 
 	let input = Input(rect, canvasElement)
 
@@ -110,14 +106,7 @@
 		canvas.fillRect ( 0, 0, width, height)
 
 		// canvas.fillStyle = '#FFEEEE'
-		camera.prepareScene()
-		for (let i = 0; i < objects.length; i++) {
-			objects[i].prepareScene(camera)
-		}
-		objects.sort(object3DDepthComparator)
-		for (let i = 0; i < objects.length; i++) {
-			objects[i].draw(canvas)
-		}
+		camera.render()
 
 		// help
 		canvas.fillStyle    = '#FFFFFF'  // white
@@ -129,13 +118,6 @@
 	}
 
 	function update(dt) {
-		for(let i = 0; i < apples.length; i++) {
-			apples[i].update(dt)
-			if (DistanceVector3(navigationMesh.heroPosition, apples[i].position) < 1.0) {
-				apples[i].removeApple(navigationMesh.getRandomPosition())
-				applesCount += 1
-			}
-		}
 
 		// control
 		// UP = 38
@@ -147,26 +129,37 @@
 		// A = 65
 		// D = 68
 		// space = 32
-		let moveSpeed = 3.0 * dt
-		let rotateSpeed = 60.0 * dt
-		navigationMesh.moveHero(moveSpeed)
 		// if (input.key[87] || input.key[38]) { // UP | W
 		// 	navigationMesh.moveHero(moveSpeed)
 		// }
 		// if (input.key[83] || input.key[40]) { // DOWN | S
 		// 	navigationMesh.moveHero(-moveSpeed)
 		// }
+		let rotateAngle = 0
 		if (input.key[65] || input.key[37]) { // LEFT | A
-			navigationMesh.rotateHeroDirection(rotateSpeed)
+			rotateAngle = 60.0
 		}
 		if (input.key[68] || input.key[39]) { // RIGHT | D
-			navigationMesh.rotateHeroDirection(-rotateSpeed)
+			rotateAngle = -60.0
 		}
-		heroView.position = navigationMesh.heroPosition
-		targetView.position = AddVector3(navigationMesh.heroPosition, navigationMesh.heroVector)
-		camera.position = SubstractVector3(CreateVector3(0.0, 0.0, 0.0), heroView.position)
+		snake.rotate(rotateAngle)
 
-		let cameraVector = NormalizeVector3(heroView.position)
+
+		snake.update(dt)
+		for(let i = 0; i < apples.length; i++) {
+			apples[i].update(dt)
+			if (DistanceVector3(navigationMesh.heroPosition, apples[i].position) < 1.0) {
+				apples[i].removeApple(navigationMesh.getRandomPosition())
+        		snake.lenght += 0.5
+				applesCount += 1
+			}
+		}
+		// heroView.position = navigationMesh.heroPosition
+		// targetView.position = AddVector3(navigationMesh.heroPosition, navigationMesh.heroVector)
+
+		camera.position = SubstractVector3(CreateVector3(), snake.position)
+
+		let cameraVector = NormalizeVector3(snake.position)
 		let XZVector = NormalizeVector2([cameraVector[0], cameraVector[2]])
 		let YNVector = NormalizeVector2([cameraVector[1], Math.sqrt(cameraVector[0], cameraVector[2])])
 		let baseAngle = Math.acos(XZVector[0]) / Math.PI * 180.0
@@ -201,9 +194,11 @@
 						navigationNodes[i].pointC,
 						"rgb(255,255,255)", false, false
 					)
-				objects.push(navigationTriangle)
 				navigationObjects.push(navigationTriangle)
 			}
+			navigationObjects.push(new Object3D(CreateVector3(8.0, 0.0, 0.0), 0.5, rgbToHex(255, 0, 0)))
+			navigationObjects.push(new Object3D(CreateVector3(0.0, 8.0, 0.0), 0.5, rgbToHex(0, 255, 0)))
+			navigationObjects.push(new Object3D(CreateVector3(0.0, 0.0, 8.0), 0.5, rgbToHex(0, 0, 255)))
 		}
 		for(let i = 0; i < navigationObjects.length; i++) {
 			navigationObjects[i].enabled = needShow;

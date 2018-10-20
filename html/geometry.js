@@ -112,6 +112,13 @@ function NormalizeVector3(v) {
 	return MultiplyVector3(v, dist)
 }
 
+function LerpVector3(a, b, t) {
+	return AddVector3(
+		MultiplyVector3(a, 1.0 - t),
+		MultiplyVector3(b, t)
+	)
+}
+
 function FindMiddlePoint (points) {
 	let sum = CreateVector3()
 	for(let i = 0; i < points.length; i++) {
