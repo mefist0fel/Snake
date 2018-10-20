@@ -10,6 +10,9 @@ class Camera {
         this.screenScale = 800.0
     }
 
+    prepareScene () {
+    }
+
     worldToScreenVector3 (point) {
         let worldPoint = point
         worldPoint = AddVector3(worldPoint, this.position)

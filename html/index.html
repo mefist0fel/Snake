@@ -67,18 +67,22 @@
 	}
 
 	let navigationMesh = new NavigationMesh(navigationNodes)
-	// let apples = [
-	// 	new Apple(navigationMesh.getRandomPosition()),
-	// 	new Apple(navigationMesh.getRandomPosition()),
-	// 	new Apple(navigationMesh.getRandomPosition())
-	// ]
+	let apples = [
+		new Apple(navigationMesh.getRandomPosition()),
+		new Apple(navigationMesh.getRandomPosition()),
+		new Apple(navigationMesh.getRandomPosition())
+	]
+
+	for(let i = 0; i < apples.length; i++) {
+		objects.push(apples[i].object3d)
+	}
 
 	let navigationObjects = null
 	let debugButtonPressed = false
 	let needShowDebugInfo = false
 
 	ShowDebugInfo(needShowDebugInfo)
-	let heroView = new Object3D(navigationMesh.heroPosition, 0.5, rgbToHex(255, 0, 0))
+	let heroView = new Object3D(navigationMesh.heroPosition, 0.5, rgbToHex(60, 128, 60))
 	let currentCameraDirection = navigationMesh.heroNormal
 	objects.push(heroView)
 	let targetView = new Object3D(AddVector3(navigationMesh.heroPosition, navigationMesh.heroVector), 0.2, rgbToHex(0, 0, 255))
@@ -106,6 +110,7 @@
 		canvas.fillRect ( 0, 0, width, height)
 
 		// canvas.fillStyle = '#FFEEEE'
+		camera.prepareScene()
 		for (let i = 0; i < objects.length; i++) {
 			objects[i].prepareScene(camera)
 		}
@@ -124,6 +129,14 @@
 	}
 
 	function update(dt) {
+		for(let i = 0; i < apples.length; i++) {
+			apples[i].update(dt)
+			if (DistanceVector3(navigationMesh.heroPosition, apples[i].position) < 1.0) {
+				apples[i].removeApple(navigationMesh.getRandomPosition())
+				applesCount += 1
+			}
+		}
+
 		// control
 		// UP = 38
 		// DOWN = 40
@@ -134,33 +147,20 @@
 		// A = 65
 		// D = 68
 		// space = 32
-		let moveSpeed = 2.0 * dt
+		let moveSpeed = 3.0 * dt
 		let rotateSpeed = 60.0 * dt
-		if (input.key[87]) {// || input.key[38]) { // UP | W
-			navigationMesh.moveHero(moveSpeed)
-		}
-		if (input.key[83]) {// || input.key[40]) { // DOWN | S
-			navigationMesh.moveHero(-moveSpeed)
-		}
-		if (input.key[65]) {// || input.key[37]) { // LEFT | A
+		navigationMesh.moveHero(moveSpeed)
+		// if (input.key[87] || input.key[38]) { // UP | W
+		// 	navigationMesh.moveHero(moveSpeed)
+		// }
+		// if (input.key[83] || input.key[40]) { // DOWN | S
+		// 	navigationMesh.moveHero(-moveSpeed)
+		// }
+		if (input.key[65] || input.key[37]) { // LEFT | A
 			navigationMesh.rotateHeroDirection(rotateSpeed)
 		}
-		if (input.key[68]) {// || input.key[39]) { // RIGHT | D
+		if (input.key[68] || input.key[39]) { // RIGHT | D
 			navigationMesh.rotateHeroDirection(-rotateSpeed)
-		}
-
-		let speed = 60.0 * dt
-		if (input.key[33] || input.key[38]) { // Page UP
-			y -= speed
-		}
-		if (input.key[34] || input.key[40]) { // Page DOWN
-			y += speed
-		}
-		if (input.key[35] || input.key[37]) { // HOME
-			x -= speed
-		}
-		if (input.key[36] || input.key[39]) { // End
-			x += speed
 		}
 		heroView.position = navigationMesh.heroPosition
 		targetView.position = AddVector3(navigationMesh.heroPosition, navigationMesh.heroVector)
@@ -216,7 +216,7 @@
 		if (dt > step) {
 			dt = step
 		}
-		update(step)
+		update(dt)
 		render()
 		time = now
 		requestAnimationFrame(frame)

@@ -22,6 +22,15 @@ class NavigationMesh {
         this.triangles.push(navigationTriangle)
     }
 
+    getRandomPosition () {
+        let randomNode = this.nodes[getRandomInt(0, this.nodes.length)]
+        return randomNode.center
+
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min)) + min;
+        }
+    }
+
     moveHero(distance = 1.0) {
         let position = AddVector3(this.heroPosition, MultiplyVector3(this.heroVector, distance))
         if (this.currentNode.IsOutABEdge(position)) {

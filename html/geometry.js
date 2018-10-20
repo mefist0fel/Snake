@@ -283,7 +283,7 @@ function CreateUnitMatrix4() {
 		0, 0, 0, 1   // 12 13 14 15
 	]
 }
-function CreateMatrix4FromMatrix3(m) {
+function CreateMatrix4FromMatrix3(m) { // matrix3 and position
 	return [         //  ids
 		m[0], m[1], m[2],    0,  //  0  1  2  3
 		m[3], m[4], m[5],    0,  //  4  5  6  7

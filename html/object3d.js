@@ -4,9 +4,12 @@ class Object3D {
 		this.position = positionVector3
 		this.screenPosition = CreateVector3()
 		this.color = color
-		this.radius = radius
-		this.radiusPositionVector = CreateVector3(this.radius)
+		this.radiusPositionVector = CreateVector3(radius)
 		this.screenRadius = 10.0
+	}
+
+	setRadius(radius) {
+		this.radiusPositionVector = CreateVector3(radius)
 	}
 	
 	prepareScene (camera) {

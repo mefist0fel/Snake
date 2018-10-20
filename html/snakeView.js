@@ -1,5 +1,5 @@
-// Apple class
-class Apple {
+// Snake class
+class Snake {
     constructor(positionVector3, radius = 0.4, animSpeed = 3.0) {
 		this.position = positionVector3
 		this.object3d = new Object3D(positionVector3, 0.0, rgbToHex(255, 0, 0))
