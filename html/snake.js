@@ -18,8 +18,9 @@ class Snake {
 
 	update (dt) {
 		let moveSpeed = 4.0 * dt
+        let rotationSpeed = this.rotationAngle * 80.0 * dt
 		navigationMesh.moveHero(moveSpeed)
-        this.navigationMesh.rotateHeroDirection(this.rotationAngle * dt)
+        this.navigationMesh.rotateHeroDirection(rotationSpeed)
         this.position = navigationMesh.heroPosition
         this.heroView.position = this.navigationMesh.heroPosition
         let headDirection = MultiplyVector3(this.navigationMesh.heroVector, 0.525);
@@ -35,7 +36,7 @@ class Snake {
         }
         // add tail segments if need
         for (let i = this.tailView.length; i < this.lenght; i++) {
-            this.tailView.push(new Object3D(CreateVector3(), 0.0, rgbToHex(40, parseInt(142 - i * 3), 40)))
+            this.tailView.push(new Object3D(CreateVector3(), 0.0, rgbToHex(40, Math.max(30, parseInt(142 - i * 3)), 40)))
         }
         // add tail points if need
         for (let i = this.tailPoints.length; i < this.tailView.length + 1; i++) {

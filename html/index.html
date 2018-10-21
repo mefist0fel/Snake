@@ -137,10 +137,10 @@
 		// }
 		let rotateAngle = 0
 		if (input.key[65] || input.key[37]) { // LEFT | A
-			rotateAngle = 60.0
+			rotateAngle = 1.0
 		}
 		if (input.key[68] || input.key[39]) { // RIGHT | D
-			rotateAngle = -60.0
+			rotateAngle = -1.0
 		}
 		snake.rotate(rotateAngle)
 
