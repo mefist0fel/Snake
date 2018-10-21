@@ -1,3 +1,14 @@
+class Level {
+    constructor(id = 0) {
+        this.setLevel(id)
+    }
+
+    setLevel(id) {
+	    //createSphere()// createDrawedCube()
+    }
+}
+
+
 function createCube(size = 10.0) {
     let objects = []
     let edgeSize = size * 0.5

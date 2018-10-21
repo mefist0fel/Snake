@@ -38,7 +38,12 @@
 
 	let width = document.documentElement.clientWidth
 	let height = document.documentElement.clientHeight
-
+	let minSize = Math.min(width, height)
+	const selectLevelState = 0
+	const pauseState = 1
+	const gameState = 2
+	let state = selectLevelState
+	
 	// init
 	let input = Input()
 	let canvasElement = document.getElementById('snake')
@@ -46,14 +51,12 @@
 	let camera = new Camera(canvas)
 	SetCanvasSize(width, height)
 
-	let x = 0.0
-	let y = 0.0
 	let applesCount = 1
-	let upVector = CreateVector3(0, 1)
-	let rightVector = CreateVector3(1, 0)
 
 	let currentMatrix = CreateUnitMatrix3()
-	let defaultCameraDirection = CreateVector3(0.0, 0.0, -1.0)
+	let rotationAxe = NormalizeVector3(CreateVector3(1.0, 1.0, 1.0))
+
+	let level = new Level()
 
 	createSphere()// createDrawedCube()
 
@@ -77,17 +80,13 @@
 		new Apple(navigationMesh.getRandomPosition())
 	]
 	let snake = new Snake(navigationMesh)
+	snake.setEnabled(false)
 
 	let navigationObjects = null
-	let debugButtonPressed = false
 	let needShowDebugInfo = false
-	let fpsButtonPressed = false
 	let needShowFPSInfo = false
 
 	ShowDebugInfo(needShowDebugInfo)
-
-	// let heroView = new Object3D(navigationMesh.heroPosition, 0.5, rgbToHex(60, 128, 60))
-	// let targetView = new Object3D(AddVector3(navigationMesh.heroPosition, navigationMesh.heroVector), 0.2, rgbToHex(0, 0, 255))
 
 	function timestamp() {
 		return window.performance && window.performance.now ? window.performance.now() : new Date().getTime()
@@ -96,15 +95,21 @@
 	function render() {
 		// clear
 		canvas.fillStyle = '#000011'
-		canvas.fillRect ( 0, 0, width, height)
-
-		camera.render()
-
-		// help
-		canvas.fillStyle = '#FFFFFF'  // white
 		canvas.font = "16pt Arial"
-		canvas.textAlign = "start"; // "end", "center", "left", "right"
-		canvas.fillText("Apples: " + applesCount, 30, 50)
+		canvas.fillRect ( 0, 0, width, height)
+		switch(state) {
+			default:
+			case selectLevelState:
+				renderSelectLevelState()
+				break
+			case pauseState:
+				renderPauseState()
+				break
+			case gameState:
+				renderGameState()
+				break
+		}
+		// debug
 		if (needShowFPSInfo) {
 			canvas.fillText("FPS:", width - 120, 50)
 			canvas.textAlign = "end";
@@ -112,8 +117,77 @@
 		}
 	}
 
-	function update(dt) {
+	function renderSelectLevelState() {
+		camera.render()
+		// info
+		canvas.fillStyle = '#FFFFFF'
+		canvas.textAlign = "center"; // "start", "end", "center", "left", "right"
+		canvas.fillText("space to start: ", width * 0.5, 50)
+	}
 
+	function renderPauseState() {
+		camera.render()
+		// info
+		canvas.fillStyle = '#FFFFFF'  // white
+		canvas.textAlign = "center"; // "start", "end", "center", "left", "right"
+		canvas.fillText("PAUSE ", width * 0.5, height * 0.5 - minSize * 0.4)
+		canvas.fillText("Q to quit ", width * 0.5, height * 0.5 + minSize * 0.4)
+		canvas.fillText("Esc to continue ", width * 0.5, height * 0.5 + minSize * 0.45)
+	}
+
+	function renderGameState() {
+		camera.render()
+		// info
+		canvas.fillStyle = '#FFFFFF'  // white
+		canvas.textAlign = "start"; // "end", "center", "left", "right"
+		canvas.fillText("Apples: " + applesCount, 30, 50)
+	}
+
+	function update(dt) {
+		switch(state) {
+			default:
+			case selectLevelState:
+				updateSelectLevelState(dt)
+				break
+			case pauseState:
+				updatePauseState(dt)
+				break
+			case gameState:
+				updateGameState(dt)
+				break
+		}
+		if (input.key[115]) { // F4
+			input.key[115] = false
+			needShowFPSInfo = !needShowFPSInfo
+		}
+	}
+
+	function updateSelectLevelState(dt) {
+		if (input.key[32]) { // space
+			setState(gameState)
+		}
+		currentMatrix = MultiplyMatrix3(currentMatrix, CreateRotationMatrix3(rotationAxe, 20.0 * dt))
+		rotationAxe = NormalizeVector3(
+			CreateVector3(
+				rotationAxe[0] * 100.0 + (Math.random() * 2.0 - 1),
+				rotationAxe[1] * 100.0 + (Math.random() * 2.0 - 1),
+				rotationAxe[2] * 100.0 + (Math.random() * 2.0 - 1)))
+		camera.worldMatrix = currentMatrix
+		camera.position = MultiplyVector3(camera.position, 1.0 - 1.0 * dt)
+	}
+
+	function updatePauseState(dt) {
+		if (input.key[27]) { // esc
+			input.key[27] = false
+			setState(gameState)
+		}
+		if (input.key[81]) { // Q
+			input.key[81] = false
+			setState(selectLevelState)
+		}
+	}
+
+	function updateGameState(dt) {
 		// control
 		// UP = 38
 		// DOWN = 40
@@ -124,12 +198,10 @@
 		// A = 65
 		// D = 68
 		// space = 32
-		// if (input.key[87] || input.key[38]) { // UP | W
-		// 	navigationMesh.moveHero(moveSpeed)
-		// }
-		// if (input.key[83] || input.key[40]) { // DOWN | S
-		// 	navigationMesh.moveHero(-moveSpeed)
-		// }
+		if (input.key[27]) { // esc
+			input.key[27] = false
+			setState(pauseState)
+		}
 		let rotateAngle = 0
 		if (input.key[65] || input.key[37]) { // LEFT | A
 			rotateAngle = 1.0
@@ -157,10 +229,8 @@
 				applesCount += 1
 			}
 		}
-		// heroView.position = navigationMesh.heroPosition
-		// targetView.position = AddVector3(navigationMesh.heroPosition, navigationMesh.heroVector)
 
-		camera.position = SubstractVector3(CreateVector3(), snake.position)
+		camera.position = snake.position
 
 		let cameraVector = NormalizeVector3(snake.position)
 		let XZVector = NormalizeVector2([cameraVector[0], cameraVector[2]])
@@ -176,21 +246,25 @@
 		if (input.key[32]) { // space
 		}
 		if (input.key[113]) { // F2
-			if (!debugButtonPressed) {
-				debugButtonPressed = true
-				needShowDebugInfo = !needShowDebugInfo
-				ShowDebugInfo(needShowDebugInfo)
-			}
-		} else {
-			debugButtonPressed = false
+			input.key[113] = false
+			needShowDebugInfo = !needShowDebugInfo
+			ShowDebugInfo(needShowDebugInfo)
 		}
-		if (input.key[115]) { // F4
-			if (!fpsButtonPressed) {
-				fpsButtonPressed = true
-				needShowFPSInfo = !needShowFPSInfo
-			}
-		} else {
-			fpsButtonPressed = false
+	}
+	
+	function setState(newState) {
+		state = newState
+		switch(state) {
+			default:
+			case selectLevelState:
+				currentMatrix = camera.worldMatrix
+				snake.setEnabled(false)
+				break
+			case pauseState:
+				break
+			case gameState:
+				snake.setEnabled(true)
+				break
 		}
 	}
 	
@@ -230,6 +304,7 @@
 		if (width != document.documentElement.clientWidth || height != document.documentElement.clientHeight) {
 			width = document.documentElement.clientWidth
 			height = document.documentElement.clientHeight
+			minSize = Math.min(width, height)
 			SetCanvasSize(width, height)
 		}
 	}

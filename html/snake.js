@@ -10,10 +10,20 @@ class Snake {
         this.tailPoints = []
         this.tailView = []
         this.prevTailPosition = this.position
+        this.enabled = true
     }
 
     rotate (angle) {
         this.rotationAngle = angle
+    }
+
+    setEnabled (enabled) {
+        this.enabled = enabled
+        this.heroView.enabled = enabled
+        this.targetView.enabled = enabled
+        for(let i = 0; i < this.tailView.length; i++) {
+            this.tailView[i].enabled = enabled
+        }
     }
 
 	update (dt) {

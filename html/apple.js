@@ -4,7 +4,7 @@ class Apple {
 		this.object3d = new Object3D(positionVector3, 0.0, rgbToHex(255, 0, 0))
 		this.radius = radius
 		this.anim = 0.0
-		this.animSpeed = animSpeed
+        this.animSpeed = animSpeed
     }
 
     removeApple(position) {

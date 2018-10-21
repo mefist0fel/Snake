@@ -30,7 +30,7 @@ class Camera {
 
     worldToScreenVector3 (point) {
         let worldPoint = point
-        worldPoint = AddVector3(worldPoint, this.position)
+        worldPoint = AddVector3(worldPoint, MultiplyVector3(this.position, -1.0))
         worldPoint = MultiplyVector3ToMatrix3(worldPoint, this.worldMatrix)
         worldPoint = AddVector3(worldPoint, this.cameraPosition)
         worldPoint = MultiplyVector3ToMatrix4(worldPoint, this.projectionMatrix)
@@ -40,7 +40,7 @@ class Camera {
 
     worldToScreenVector3WithOffcet (point, offcet) {
         let worldPoint = point
-        worldPoint = AddVector3(worldPoint, this.position)
+        worldPoint = AddVector3(worldPoint, MultiplyVector3(this.position, -1.0))
         worldPoint = MultiplyVector3ToMatrix3(worldPoint, this.worldMatrix)
         worldPoint = AddVector3(worldPoint, this.cameraPosition)
         worldPoint = AddVector3(worldPoint, offcet)
