@@ -1,4 +1,4 @@
-function Input(rect, canvasElement) {
+function Input() {
 	//  KEY KODES
 	//	BACKSPACE: 8,
 	//	TAB:       9,	RETURN:   13,
@@ -18,58 +18,60 @@ function Input(rect, canvasElement) {
 		mousePosition: [0, 0]
 	}
 	for(var i = 0; i < 200; i++) {
-		input.key[i] = false;
+		input.key[i] = false
 	}
 
 	function setKey(keyCode, value) {
-		input.key[keyCode] = value;
+		input.key[keyCode] = value
 	}
 
-	function onkeydown(event) {
-		setKey(event.keyCode, true);
+	function onKeyDown(event) {
+		setKey(event.keyCode, true)
 	}
-	function onkeyup(event) {
-		setKey(event.keyCode, false);
-	}
-
-	function onclick(event) {
-		//ballCoord[0] = event.clientX - rect.left;
-		//ballCoord[1] = event.clientY - rect.top;
+	function onKeyUp(event) {
+		setKey(event.keyCode, false)
 	}
 
-	function mousedown(event) {
-		input.mouseLeft = true;
+	function onClick(event) {}
+
+	function mouseDown(event) {
+		input.mouseLeft = true
+		input.mousePosition[0] = event.clientX
+		input.mousePosition[1] = event.clientY
 	}
 
-	function mouseup(event) {
-		input.mouseLeft = false;
+	function mouseUp(event) {
+		input.mouseLeft = false
+		input.mousePosition[0] = event.clientX
+		input.mousePosition[1] = event.clientY
 	}
 
-	function mousemove(event) {
-		input.mousePosition[0] = event.clientX - rect.left;
-		input.mousePosition[1] = event.clientY - rect.top;
+	function mouseMove(event) {
+		input.mousePosition[0] = event.clientX
+		input.mousePosition[1] = event.clientY
 	}
 
-	function ontouchstart(event) {
+	function onTouchStart(event) {
 	}
 
-	function ontouchmove(event) {
+	function onTouchMove(event) {
 	}
 
-	document.addEventListener('keydown',    onkeydown,    false);
-	document.addEventListener('keyup',      onkeyup,      false);
+	function onTouchEnd(event) {
+	}
 
-	//canvasElement.addEventListener('click',		onclick,		false);
-	//canvasElement.addEventListener('mousedown', mousedown,		false);
-	//canvasElement.addEventListener('mouseup',	mouseup,		false);
-	//canvasElement.addEventListener('mousemove',	mousemove,		false);
-	//canvasElement.addEventListener('touchstart',ontouchstart,	false);
-	//canvasElement.addEventListener('touchmove',	ontouchmove,	false);
-	document.addEventListener('click',		onclick,		false);
-	document.addEventListener('mousedown',  mousedown,		false);
-	document.addEventListener('mouseup',	mouseup,		false);
-	document.addEventListener('mousemove',	mousemove,		false);
-	document.addEventListener('touchstart', ontouchstart,	false);
-	document.addEventListener('touchmove',	ontouchmove,	false);
+	function onTouchCancel(event) {
+	}
+
+	document.addEventListener('keydown',     onKeyDown,    false)
+	document.addEventListener('keyup',       onKeyUp,      false)
+	document.addEventListener('click',		 onClick,	  false)
+	document.addEventListener('mousedown',   mouseDown,	  false)
+	document.addEventListener('mouseup',	 mouseUp,	  false)
+	document.addEventListener('mousemove',	 mouseMove,	  false)
+	document.addEventListener('touchstart',  onTouchStart, false)
+	document.addEventListener('touchmove',	 onTouchMove,  false)
+	document.addEventListener("touchend", 	 onTouchEnd, false);
+	document.addEventListener("touchcancel", onTouchCancel, false);
 	return input;
 }

@@ -1,17 +1,21 @@
 class Camera {
-    constructor(width, height, canvas) {
+    constructor(canvas, width = 100.0, height = 100.0) {
         this.objects = []
-        this.screenWidht = width;
-        this.screenHeight = height;
+        this.setSize(width, height)
         this.worldMatrix = CreateUnitMatrix3()
         this.projectionMatrix = CreateProjectionMatrix4(1.0, 1.0, 1.0, 2.0)
-        this.centerOffcet = CreateVector3(width * 0.5, height * 0.5)
-        this.cameraPosition = CreateVector3(0.0, 0.0, 20.0)
+        this.cameraPosition = CreateVector3(0.0, 0.0, 15.0)
         this.position = CreateVector3()
-        this.screenScale = 800.0
         this.canvas = canvas
 
         Camera.instance = this
+    }
+
+    setSize(width, height) {
+        this.screenWidht = width;
+        this.screenHeight = height;
+        this.centerOffcet = CreateVector3(width * 0.5, height * 0.5)
+        this.screenScale = Math.min(width, height)
     }
 
     render () {

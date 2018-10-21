@@ -10,7 +10,7 @@
 			margin: 0;
 		}
 		canvas {
-			background-color:#ffffff;
+			background-color:#000000;
 			display: block;
 			margin: 0px auto;
 		}
@@ -32,34 +32,28 @@
 	<script type="text/javascript" src="jsfxr.js"></script>
 	<script type="text/javascript" src="audio.js"></script>-->
 	<script type="text/javascript">
-	let now,
-		dt = 0,
-		time = timestamp(),
-		step = 1/30,
-		width = 1024,
-		height = 768
+	const minDt = 1/30
+	let fps,
+		time = timestamp()
 
-	width = document.documentElement.clientWidth
-	height = document.documentElement.clientHeight
+	let width = document.documentElement.clientWidth
+	let height = document.documentElement.clientHeight
 
 	// init
+	let input = Input()
 	let canvasElement = document.getElementById('snake')
 	let canvas = canvasElement.getContext('2d')
-	canvasElement.width = width
-	canvasElement.height = height
-	rect = canvasElement.getBoundingClientRect()
+	let camera = new Camera(canvas)
+	SetCanvasSize(width, height)
 
-
-	let x = 0.0 // 180 + 45.0
-	let y = 0.0 // -45.0 + 22.5
+	let x = 0.0
+	let y = 0.0
 	let applesCount = 1
 	let upVector = CreateVector3(0, 1)
 	let rightVector = CreateVector3(1, 0)
 
 	let currentMatrix = CreateUnitMatrix3()
 	let defaultCameraDirection = CreateVector3(0.0, 0.0, -1.0)
-
-	let camera = new Camera(width, height, canvas)
 
 	createSphere()// createDrawedCube()
 
@@ -93,9 +87,6 @@
 	// let heroView = new Object3D(navigationMesh.heroPosition, 0.5, rgbToHex(60, 128, 60))
 	// let targetView = new Object3D(AddVector3(navigationMesh.heroPosition, navigationMesh.heroVector), 0.2, rgbToHex(0, 0, 255))
 
-
-	let input = Input(rect, canvasElement)
-
 	function timestamp() {
 		return window.performance && window.performance.now ? window.performance.now() : new Date().getTime()
 	}
@@ -105,16 +96,18 @@
 		canvas.fillStyle = '#000011'
 		canvas.fillRect ( 0, 0, width, height)
 
-		// canvas.fillStyle = '#FFEEEE'
 		camera.render()
 
 		// help
-		canvas.fillStyle    = '#FFFFFF'  // white
-		canvas.font = "14pt Arial"
-		canvas.fillText("Apples " + applesCount, 30, 30)
-		// canvas.fillText("Z / X - change height constant", 10, 50)
-		// canvas.fillText("C / V - change tile aspect", 10, 70)
-		// canvas.fillText("Camera angle " + camera.angle, 10, 90)
+		canvas.fillStyle = '#FFFFFF'  // white
+		canvas.font = "16pt Arial"
+		canvas.textAlign = "start"; // "end", "center", "left", "right"
+		canvas.fillText("Apples: " + applesCount, 30, 50)
+		if (needShowDebugInfo) {
+			canvas.fillText("FPS:", width - 120, 50)
+			canvas.textAlign = "end";
+			canvas.fillText(parseInt(fps), width - 30, 50)
+		}
 	}
 
 	function update(dt) {
@@ -141,6 +134,14 @@
 		}
 		if (input.key[68] || input.key[39]) { // RIGHT | D
 			rotateAngle = -1.0
+		}
+		if (input.mouseLeft) {
+			if (inRect(input.mousePosition[0], input.mousePosition[1], 0.0, height * 0.5, width * 0.3, height * 1.0)) {
+				rotateAngle = 1.0 // left
+			}
+			if (inRect(input.mousePosition[0], input.mousePosition[1], width * 0.7, height * 0.5, width * 1.0, height * 1.0)) {
+				rotateAngle = -1.0 // right
+			}
 		}
 		snake.rotate(rotateAngle)
 
@@ -205,18 +206,34 @@
 		}
 	}
 
+	function inRect(x, y, rsx, rsy, rex, rey) { // Rect start x/y and Rect end x/y
+		return (x >= rsx) && (x <= rex) && (y >= rsy) && (y <= rey)
+	}
+
 	function frame() {
-		now = timestamp()
-		dt = dt + Math.min(1, (now - time) / 1000)
-		if (dt > step) {
-			dt = step
+		let now = timestamp()
+		let delta = (now - time) / 1000.0
+		fps = 1.0 / delta
+		if (delta > minDt) {
+			delta = minDt
 		}
-		update(dt)
+		update(delta)
 		render()
 		time = now
 		requestAnimationFrame(frame)
+		if (width != document.documentElement.clientWidth || height != document.documentElement.clientHeight) {
+			width = document.documentElement.clientWidth
+			height = document.documentElement.clientHeight
+			SetCanvasSize(width, height)
+		}
 	}
 	requestAnimationFrame(frame)
+
+	function SetCanvasSize(width, height) {
+		canvasElement.width = width
+		canvasElement.height = height
+		camera.setSize(width, height)
+	}
 
 	</script>
 </html>

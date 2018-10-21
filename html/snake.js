@@ -17,8 +17,8 @@ class Snake {
     }
 
 	update (dt) {
-		let moveSpeed = 4.0 * dt
-        let rotationSpeed = this.rotationAngle * 80.0 * dt
+		let moveSpeed = 7.0 * dt
+        let rotationSpeed = this.rotationAngle * 140.0 * dt
 		navigationMesh.moveHero(moveSpeed)
         this.navigationMesh.rotateHeroDirection(rotationSpeed)
         this.position = navigationMesh.heroPosition
