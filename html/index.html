@@ -216,10 +216,6 @@
 		}
 	}
 
-	function inRect(x, y, rsx, rsy, rex, rey) { // Rect start x/y and Rect end x/y
-		return (x >= rsx) && (x <= rex) && (y >= rsy) && (y <= rey)
-	}
-
 	function frame() {
 		let now = timestamp()
 		let delta = (now - time) / 1000.0

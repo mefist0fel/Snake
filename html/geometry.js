@@ -1,3 +1,7 @@
+function inRect(x, y, rsx, rsy, rex, rey) { // Rect start x/y and Rect end x/y
+	return (x >= rsx) && (x <= rex) && (y >= rsy) && (y <= rey)
+}
+
 // vector 2 functions
 function CreateVector2(x = 0.0, y = 0.0) {
 	return [x, y,]
