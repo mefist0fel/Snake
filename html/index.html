@@ -81,6 +81,8 @@
 	let navigationObjects = null
 	let debugButtonPressed = false
 	let needShowDebugInfo = false
+	let fpsButtonPressed = false
+	let needShowFPSInfo = false
 
 	ShowDebugInfo(needShowDebugInfo)
 
@@ -103,7 +105,7 @@
 		canvas.font = "16pt Arial"
 		canvas.textAlign = "start"; // "end", "center", "left", "right"
 		canvas.fillText("Apples: " + applesCount, 30, 50)
-		if (needShowDebugInfo) {
+		if (needShowFPSInfo) {
 			canvas.fillText("FPS:", width - 120, 50)
 			canvas.textAlign = "end";
 			canvas.fillText(parseInt(fps), width - 30, 50)
@@ -181,6 +183,14 @@
 			}
 		} else {
 			debugButtonPressed = false
+		}
+		if (input.key[115]) { // F4
+			if (!fpsButtonPressed) {
+				fpsButtonPressed = true
+				needShowFPSInfo = !needShowFPSInfo
+			}
+		} else {
+			fpsButtonPressed = false
 		}
 	}
 	
