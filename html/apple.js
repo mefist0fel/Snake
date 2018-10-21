@@ -1,15 +1,15 @@
 class Apple {
-    constructor(positionVector3, radius = 0.4, animSpeed = 6.0) {
+    constructor(positionVector3, color, radius = 0.4, animSpeed = 6.0) {
 		this.position = positionVector3
-		this.object3d = new Object3D(positionVector3, 0.0, rgbToHex(255, 0, 0))
+		this.object3d = new Object3D(positionVector3, 0.0, color)
 		this.radius = radius
 		this.anim = 0.0
         this.animSpeed = animSpeed
     }
 
-    removeApple(position) {
+    remove (position) {
         this.position = position
-        this.anim = -this.anim
+        this.anim = -Math.abs(this.anim)
     }
 
 	update (dt) {

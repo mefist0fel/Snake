@@ -7,9 +7,14 @@ class Level {
         this.id = id
         Camera.instance.objects = []
         this.navigationObjects = null
+        this.livesCount = 3
         this.applesCount = 0
+        this.applesNeed = (6 + id * 3)
+        this.needRocks = parseInt(id / 4.0 + 2.0)
         this.navigationNodes = []
         let navigationTriangles = null
+        if (id == 0 || id % 3 == parseInt(id / 3) % 3)
+            this.needRocks = 0
         switch(id % 3) {
             case 0:
                 createSphere()
@@ -39,21 +44,40 @@ class Level {
         this.snake = new Snake(this.navigationMesh)
         this.snake.setEnabled(false)
         this.apples = [
-            new Apple(CreateVector3()),
-            new Apple(CreateVector3()),
-            new Apple(CreateVector3())
+            new Apple(CreateVector3(), rgbToHex(255, 0, 0)),
+            new Apple(CreateVector3(), rgbToHex(255, 0, 0)),
+            new Apple(CreateVector3(), rgbToHex(255, 0, 0))
         ]
+        this.rocks = []
+        for(let i = 0; i < this.needRocks; i++) {
+            this.rocks.push(new Apple(CreateVector3(), rgbToHex(0, 0, 200)))
+        }
     }
 
     update(dt) {
 		for(let i = 0; i < this.apples.length; i++) {
 			this.apples[i].update(dt)
         }
+		for(let i = 0; i < this.rocks.length; i++) {
+			this.rocks[i].update(dt)
+        }
 		for(let i = 0; i < this.apples.length; i++) {
 			if (DistanceVector3(this.navigationMesh.heroPosition, this.apples[i].position) < 1.0) {
-				this.apples[i].removeApple(this.navigationMesh.getRandomPosition())
+				this.apples[i].remove(this.navigationMesh.getRandomPosition())
         		this.snake.lenght += 0.5
 				this.applesCount += 1
+			}
+		}
+		for(let i = 0; i < this.rocks.length; i++) {
+			if (DistanceVector3(this.navigationMesh.heroPosition, this.rocks[i].position) < 1.0) {
+				this.rocks[i].remove(this.navigationMesh.getRandomPosition())
+        		this.snake.lenght -= 0.2
+				this.livesCount -= 1
+			}
+		}
+		for(let i = 6; i < this.snake.tailPoints.length - 1; i++) {
+			if (DistanceVector3(this.navigationMesh.heroPosition, this.snake.tailPoints[i]) < 1.0) {
+				this.livesCount = 0
 			}
 		}
     }
@@ -61,14 +85,20 @@ class Level {
     start() {
         this.snake.setEnabled(true)
         for(let i = 0; i < this.apples.length; i++) {
-            this.apples[i].removeApple(this.navigationMesh.getRandomPosition())
+            this.apples[i].remove(this.navigationMesh.getRandomPosition())
+        }
+        for(let i = 0; i < this.rocks.length; i++) {
+            this.rocks[i].remove(this.navigationMesh.getRandomPosition())
         }
     }
 
     hideLevelDetails() {
         this.snake.setEnabled(false)
         for(let i = 0; i < this.apples.length; i++) {
-            this.apples[i].removeApple(CreateVector3())
+            this.apples[i].remove(CreateVector3())
+        }
+        for(let i = 0; i < this.rocks.length; i++) {
+            this.rocks[i].remove(CreateVector3())
         }
     }
 	

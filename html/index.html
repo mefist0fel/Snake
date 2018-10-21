@@ -109,7 +109,10 @@
 		canvas.fillStyle = '#FFFFFF'
 		canvas.textAlign = "center"; // "start", "end", "center", "left", "right"
 		canvas.fillText("Level: " + levelId , width * 0.5, height * 0.5 - minSize * 0.45)
-		canvas.fillText("space to start", width * 0.5, height * 0.5 - minSize * 0.4)
+		canvas.fillText("need apples: " + level.applesNeed , width * 0.5, height * 0.5 - minSize * 0.4)
+		canvas.fillText("rocks on level: " + level.needRocks , width * 0.5, height * 0.5 - minSize * 0.35)
+		canvas.fillText("<< to select level >>", width * 0.5, height * 0.5 + minSize * 0.4)
+		canvas.fillText("space to start", width * 0.5, height * 0.5 + minSize * 0.45)
 	}
 
 	function renderWinState() {
@@ -117,8 +120,9 @@
 		// info
 		canvas.fillStyle = '#FFFFFF'
 		canvas.textAlign = "center"; // "start", "end", "center", "left", "right"
-		canvas.fillText("You win!", width * 0.5, height * 0.5 + minSize * 0.4)
-		canvas.fillText("space to next level", width * 0.5, height * 0.5 - minSize * 0.4)
+		canvas.fillText("YOU WIN!", width * 0.5, height * 0.5 - minSize * 0.4)
+		canvas.fillText("space to next level", width * 0.5, height * 0.5 + minSize * 0.4)
+		canvas.fillText("esc to level selection", width * 0.5, height * 0.5 + minSize * 0.45)
 	}
 
 	function renderLoseState() {
@@ -126,8 +130,9 @@
 		// info
 		canvas.fillStyle = '#FFFFFF'
 		canvas.textAlign = "center"; // "start", "end", "center", "left", "right"
-		canvas.fillText("Lose: " + levelId , width * 0.5, height * 0.5 - minSize * 0.45)
-		canvas.fillText("space to start", width * 0.5, height * 0.5 - minSize * 0.4)
+		canvas.fillText("YOU LOSE!", width * 0.5, height * 0.5 - minSize * 0.4)
+		canvas.fillText("space to retry", width * 0.5, height * 0.5 + minSize * 0.4)
+		canvas.fillText("esc to level selection", width * 0.5, height * 0.5 + minSize * 0.45)
 	}
 
 	function renderPauseState() {
@@ -142,14 +147,9 @@
 
 	function renderStartGameState() {
 		camera.render()
-		let alpha = parseInt((1.0 - Math.abs(changeLevelAnim * 2.0 - 1.0)) * 255.0)
+		let alpha = parseInt((Math.max(0.0, 1.0 - Math.abs(changeLevelAnim * 3.0 - 1.5))) * 255.0)
 		canvas.fillStyle = rgbToHex(0, 0, 0, alpha)
-		canvas.font = "16pt Arial"
 		canvas.fillRect ( 0, 0, width, height)
-		// info
-		canvas.fillStyle = '#FFFFFF'  // white
-		canvas.textAlign = "center"; // "start", "end", "center", "left", "right"
-		canvas.fillText("Start ", width * 0.5, height * 0.5 - minSize * 0.4)
 	}
 
 	function renderGameState() {
@@ -157,7 +157,8 @@
 		// info
 		canvas.fillStyle = '#FFFFFF'  // white
 		canvas.textAlign = "start"; // "end", "center", "left", "right"
-		canvas.fillText("Apples: " + level.applesCount, 30, 50)
+		canvas.fillText("Apples: " + level.applesCount + "/" + level.applesNeed, width * 0.5 - minSize * 0.5, height * 0.5 - minSize * 0.45)
+		canvas.fillText("lives: " + level.livesCount, width * 0.5 - minSize * 0.5, height * 0.5 - minSize * 0.4)
 	}
 
 	function update(dt) {
@@ -258,11 +259,12 @@
 			return
 		}
 		if (level.id == levelId) {
-			setState(gameState)
+			setState(startGameState)
 			return
 		}
 		if (input.key[27]) { // esc
 			input.key[27] = false
+			levelId -= 1
 			setState(selectLevelState)
 		}
 		if (input.key[32]) { // space
@@ -270,13 +272,14 @@
 			changeLevelAnim = 1.0
 			changeLevelDirection = 1.0
 		}
+		level.update(dt)
 	}
 
 	function updateStartGameState(dt) {
 		if (changeLevelAnim > 0) {
-			const changeSpeed = 3.0
+			const changeSpeed = 1.0
 			let next = changeLevelAnim - changeSpeed * dt
-			if (next > 0.5 && changeLevelAnim <= 0.5) {
+			if (next <= 0.5 && changeLevelAnim > 0.5) {
 				level.setLevel(levelId)
 			}
 			changeLevelAnim = next
@@ -296,12 +299,13 @@
 	function updateLoseState(dt) {
 		if (input.key[27]) { // esc
 			input.key[27] = false
-			setState(gameState)
-		}
-		if (input.key[81]) { // Q
-			input.key[81] = false
 			setState(selectLevelState)
 		}
+		if (input.key[32]) { // space
+			input.key[32] = false
+			setState(startGameState)
+		}
+		level.update(dt)
 	}
 
 	function updatePauseState(dt) {
@@ -358,9 +362,11 @@
 			needShowDebugInfo = !needShowDebugInfo
 			level.showDebugInfo(needShowDebugInfo)
 		}
-		if (input.key[32]) { // space
-			input.key[32] = false
+		if (level.applesNeed <= level.applesCount) {
 			setState(winState)
+		}
+		if (level.livesCount <= 0) {
+			setState(loseState)
 		}
 	}
 
@@ -393,14 +399,16 @@
 				break
 			case gameState:
 				for(let i = 0; i < 30; i++) {
-					level.update(1.0/30.0)
+					level.snake.update(1.0/30.0)
 				}
 				level.start()
 				break
 			case winState:
+				level.hideLevelDetails()
 				levelId += 1
 				break
 			case loseState:
+				level.hideLevelDetails()
 				break
 		}
 	}
