@@ -268,7 +268,7 @@ function CreateNavigationSphere(radius = 5.0, navigationRadius = 0.5, segments =
     return navigationTriangles
 }
 
-function createCilynder(sides = 32, radius = 5.0, height = 8.0, heightSegments = 8, radiusSegment = 6) {
+function createCilynder(sides = 32, radius = 4.0, height = 7.0, heightSegments = 8, radiusSegment = 6) {
     let objects = []
 	let radiusVectors = []
 	for (let i = 0; i <= sides; i++) {
@@ -332,7 +332,7 @@ function createCilynder(sides = 32, radius = 5.0, height = 8.0, heightSegments =
     return objects
 }
 
-function createNavigationCilynder(sides = 16, radius = 5.0, height = 8.0, navigationRadius = 0.5) {
+function createNavigationCilynder(sides = 16, radius = 4.0, height = 7.0, navigationRadius = 0.5) {
     let navigationTriangles = []
 	let radiusVectors = []
 	for (let i = 0; i <= sides; i++) {
@@ -405,10 +405,10 @@ function createObject(x, y, z) {
     return new Object3D(position, 0.5, color)
 }
 
-function rgbToHex(r, g, b) {
+function rgbToHex(r, g, b, a = 255) {
     function componentToHex(c) {
         var hex = c.toString(16)
         return hex.length == 1 ? "0" + hex : hex;
     }
-    return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+    return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b) + componentToHex(a);
 }

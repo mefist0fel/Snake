@@ -19,6 +19,13 @@ function MultiplyVector2(v, multiplier) {
 	return [v[0] * multiplier, v[1] * multiplier]
 }
 
+function LerpVector2(a, b, t) {
+	return AddVector2(
+		MultiplyVector2(a, 1.0 - t),
+		MultiplyVector2(b, t)
+	)
+}
+
 function Vector2Length(v) {
 	return Math.sqrt(v[0] * v[0] + v[1] * v[1])
 }

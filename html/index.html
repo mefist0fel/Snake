@@ -41,7 +41,10 @@
 	let minSize = Math.min(width, height)
 	const selectLevelState = 0
 	const pauseState = 1
-	const gameState = 2
+	const gameState = 3
+	const startGameState = 4
+	const winState = 5
+	const loseState = 6
 	let state = selectLevelState
 	
 	// init
@@ -79,8 +82,17 @@
 			case pauseState:
 				renderPauseState()
 				break
+			case startGameState:
+				renderStartGameState()
+				break
 			case gameState:
 				renderGameState()
+				break
+			case winState:
+				renderWinState()
+				break
+			case loseState:
+				renderLoseState()
 				break
 		}
 		// debug
@@ -100,6 +112,24 @@
 		canvas.fillText("space to start", width * 0.5, height * 0.5 - minSize * 0.4)
 	}
 
+	function renderWinState() {
+		camera.render()
+		// info
+		canvas.fillStyle = '#FFFFFF'
+		canvas.textAlign = "center"; // "start", "end", "center", "left", "right"
+		canvas.fillText("You win!", width * 0.5, height * 0.5 + minSize * 0.4)
+		canvas.fillText("space to next level", width * 0.5, height * 0.5 - minSize * 0.4)
+	}
+
+	function renderLoseState() {
+		camera.render()
+		// info
+		canvas.fillStyle = '#FFFFFF'
+		canvas.textAlign = "center"; // "start", "end", "center", "left", "right"
+		canvas.fillText("Lose: " + levelId , width * 0.5, height * 0.5 - minSize * 0.45)
+		canvas.fillText("space to start", width * 0.5, height * 0.5 - minSize * 0.4)
+	}
+
 	function renderPauseState() {
 		camera.render()
 		// info
@@ -108,6 +138,18 @@
 		canvas.fillText("PAUSE ", width * 0.5, height * 0.5 - minSize * 0.4)
 		canvas.fillText("Q to quit ", width * 0.5, height * 0.5 + minSize * 0.4)
 		canvas.fillText("Esc to continue ", width * 0.5, height * 0.5 + minSize * 0.45)
+	}
+
+	function renderStartGameState() {
+		camera.render()
+		let alpha = parseInt((1.0 - Math.abs(changeLevelAnim * 2.0 - 1.0)) * 255.0)
+		canvas.fillStyle = rgbToHex(0, 0, 0, alpha)
+		canvas.font = "16pt Arial"
+		canvas.fillRect ( 0, 0, width, height)
+		// info
+		canvas.fillStyle = '#FFFFFF'  // white
+		canvas.textAlign = "center"; // "start", "end", "center", "left", "right"
+		canvas.fillText("Start ", width * 0.5, height * 0.5 - minSize * 0.4)
 	}
 
 	function renderGameState() {
@@ -124,11 +166,20 @@
 			case selectLevelState:
 				updateSelectLevelState(dt)
 				break
+			case startGameState:
+				updateStartGameState(dt)
+				break
 			case pauseState:
 				updatePauseState(dt)
 				break
 			case gameState:
 				updateGameState(dt)
+				break
+			case winState:
+				updateWinState(dt)
+				break
+			case loseState:
+				updateLoseState(dt)
 				break
 		}
 		if (input.key[115]) { // F4
@@ -156,7 +207,8 @@
 			return
 		}
 		if (input.key[32]) { // space
-			setState(gameState)
+			input.key[32] = false
+			setState(startGameState)
 		}
 		if (input.key[65] || input.key[37]) { // LEFT | A
 			if (levelId > 0) {
@@ -184,6 +236,71 @@
 			input.key[113] = false
 			needShowDebugInfo = !needShowDebugInfo
 			level.showDebugInfo(needShowDebugInfo)
+		}
+	}
+
+	function updateWinState(dt) {
+		if (changeLevelAnim > 0) {
+			const changeSpeed = 3.0
+			changeLevelAnim -= changeSpeed * dt
+			if (changeLevelAnim < 0) {
+				changeLevelAnim = 0
+			}
+			let anim = (changeLevelAnim - 0.5) * 2.0
+			if (anim > 0) {
+				camera.cameraPosition = CreateVector3((1 - anim * anim) * 30.0 * changeLevelDirection, 0.0, 15.0)
+			} else {
+				if (level.id != levelId) {
+					level.setLevel(levelId)
+				}
+				camera.cameraPosition = CreateVector3((-1 + anim * anim) * 30.0 * changeLevelDirection, 0.0, 15.0)
+			}
+			return
+		}
+		if (level.id == levelId) {
+			setState(gameState)
+			return
+		}
+		if (input.key[27]) { // esc
+			input.key[27] = false
+			setState(selectLevelState)
+		}
+		if (input.key[32]) { // space
+			input.key[32] = false
+			changeLevelAnim = 1.0
+			changeLevelDirection = 1.0
+		}
+	}
+
+	function updateStartGameState(dt) {
+		if (changeLevelAnim > 0) {
+			const changeSpeed = 3.0
+			let next = changeLevelAnim - changeSpeed * dt
+			if (next > 0.5 && changeLevelAnim <= 0.5) {
+				level.setLevel(levelId)
+			}
+			changeLevelAnim = next
+			if (changeLevelAnim < 0)
+				changeLevelAnim = 0
+			if (changeLevelAnim < 0.5) {
+				level.update(dt)
+				camera.position = level.snake.position
+				let angles = getCameraRotation(level.snake.position)
+				camera.worldMatrix = MultiplyMatrix3(CreateRotationMatrix3(CreateVector3(1.0), angles[0]), CreateRotationMatrix3(CreateVector3(0.0, 1.0), angles[1]))
+			}
+		} else {
+			setState(gameState)
+		}
+	}
+
+	function updateLoseState(dt) {
+		if (input.key[27]) { // esc
+			input.key[27] = false
+			setState(gameState)
+		}
+		if (input.key[81]) { // Q
+			input.key[81] = false
+			setState(selectLevelState)
 		}
 	}
 
@@ -234,8 +351,21 @@
 		level.update(dt)
 
 		camera.position = level.snake.position
+		let angles = getCameraRotation(level.snake.position)
+		camera.worldMatrix = MultiplyMatrix3(CreateRotationMatrix3(CreateVector3(1.0), angles[0]), CreateRotationMatrix3(CreateVector3(0.0, 1.0), angles[1]))
+		if (input.key[113]) { // F2
+			input.key[113] = false
+			needShowDebugInfo = !needShowDebugInfo
+			level.showDebugInfo(needShowDebugInfo)
+		}
+		if (input.key[32]) { // space
+			input.key[32] = false
+			setState(winState)
+		}
+	}
 
-		let cameraVector = NormalizeVector3(level.snake.position)
+	function getCameraRotation(position) {
+		let cameraVector = NormalizeVector3(position)
 		let XZVector = NormalizeVector2([cameraVector[0], cameraVector[2]])
 		let YNVector = NormalizeVector2([cameraVector[1], Math.sqrt(cameraVector[0], cameraVector[2])])
 		let baseAngle = Math.acos(XZVector[0]) / Math.PI * 180.0
@@ -245,12 +375,7 @@
 		} else {
 		 	baseAngle = 90.0 - baseAngle
 		}
-		camera.worldMatrix = MultiplyMatrix3(CreateRotationMatrix3(CreateVector3(1.0), upAngle), CreateRotationMatrix3(CreateVector3(0.0, 1.0), baseAngle))
-		if (input.key[113]) { // F2
-			input.key[113] = false
-			needShowDebugInfo = !needShowDebugInfo
-			level.showDebugInfo(needShowDebugInfo)
-		}
+		return [upAngle, baseAngle]
 	}
 	
 	function setState(newState) {
@@ -261,10 +386,21 @@
 				currentMatrix = camera.worldMatrix
 				level.hideLevelDetails()
 				break
+			case startGameState:
+				changeLevelAnim = 1.0
+				break
 			case pauseState:
 				break
 			case gameState:
+				for(let i = 0; i < 30; i++) {
+					level.update(1.0/30.0)
+				}
 				level.start()
+				break
+			case winState:
+				levelId += 1
+				break
+			case loseState:
 				break
 		}
 	}
