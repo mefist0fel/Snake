@@ -29,9 +29,9 @@ class Snake {
 	update (dt) {
 		let moveSpeed = 7.0 * dt
         let rotationSpeed = this.rotationAngle * 140.0 * dt
-		navigationMesh.moveHero(moveSpeed)
+		this.navigationMesh.moveHero(moveSpeed)
         this.navigationMesh.rotateHeroDirection(rotationSpeed)
-        this.position = navigationMesh.heroPosition
+        this.position = this.navigationMesh.heroPosition
         this.heroView.position = this.navigationMesh.heroPosition
         let headDirection = MultiplyVector3(this.navigationMesh.heroVector, 0.525);
         this.targetView.position = AddVector3(this.navigationMesh.heroPosition, headDirection)
@@ -54,7 +54,7 @@ class Snake {
         }
         for(let i = 0; i < this.tailView.length; i++) {
             this.tailView[i].position = LerpVector3(this.tailPoints[i + 1], this.tailPoints[i], distanceToLast) 
-            let newRadius = Math.min(0.5, (this.lenght - i) * 0.2)
+            let newRadius = Math.min(0.5, (this.lenght - i) * 0.25)
             this.tailView[i].setRadius(newRadius)
         }
 	}

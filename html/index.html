@@ -50,43 +50,17 @@
 	let canvas = canvasElement.getContext('2d')
 	let camera = new Camera(canvas)
 	SetCanvasSize(width, height)
-
-	let applesCount = 1
+	let changeLevelAnim = 0
+	let changeLevelDirection = 1.0
+	let levelId = 0
 
 	let currentMatrix = CreateUnitMatrix3()
 	let rotationAxe = NormalizeVector3(CreateVector3(1.0, 1.0, 1.0))
 
 	let level = new Level()
 
-	createSphere()// createDrawedCube()
-
-	let navigationTriangles = CreateNavigationSphere() // CreateNavigationCube(11.0)
-	let navigationNodes = []
-	for(let i = 0; i < navigationTriangles.length; i++) {
-		let points = navigationTriangles[i]
-		navigationNodes.push(
-			new NavigationNode(
-				points[0],
-				points[1],
-				points[2]
-			)
-		)
-	}
-
-	let navigationMesh = new NavigationMesh(navigationNodes)
-	let apples = [
-		new Apple(navigationMesh.getRandomPosition()),
-		new Apple(navigationMesh.getRandomPosition()),
-		new Apple(navigationMesh.getRandomPosition())
-	]
-	let snake = new Snake(navigationMesh)
-	snake.setEnabled(false)
-
-	let navigationObjects = null
 	let needShowDebugInfo = false
 	let needShowFPSInfo = false
-
-	ShowDebugInfo(needShowDebugInfo)
 
 	function timestamp() {
 		return window.performance && window.performance.now ? window.performance.now() : new Date().getTime()
@@ -122,7 +96,8 @@
 		// info
 		canvas.fillStyle = '#FFFFFF'
 		canvas.textAlign = "center"; // "start", "end", "center", "left", "right"
-		canvas.fillText("space to start: ", width * 0.5, 50)
+		canvas.fillText("Level: " + levelId , width * 0.5, height * 0.5 - minSize * 0.45)
+		canvas.fillText("space to start", width * 0.5, height * 0.5 - minSize * 0.4)
 	}
 
 	function renderPauseState() {
@@ -140,7 +115,7 @@
 		// info
 		canvas.fillStyle = '#FFFFFF'  // white
 		canvas.textAlign = "start"; // "end", "center", "left", "right"
-		canvas.fillText("Apples: " + applesCount, 30, 50)
+		canvas.fillText("Apples: " + level.applesCount, 30, 50)
 	}
 
 	function update(dt) {
@@ -159,13 +134,43 @@
 		if (input.key[115]) { // F4
 			input.key[115] = false
 			needShowFPSInfo = !needShowFPSInfo
+			console.log(Camera.instance.objects.length)
 		}
 	}
 
 	function updateSelectLevelState(dt) {
+		if (changeLevelAnim > 0) {
+			const changeSpeed = 3.0
+			changeLevelAnim -= changeSpeed * dt
+			if (changeLevelAnim < 0)
+				changeLevelAnim = 0
+			let anim = (changeLevelAnim - 0.5) * 2.0
+			if (anim > 0) {
+				camera.cameraPosition = CreateVector3((1 - anim * anim) * 30.0 * changeLevelDirection, 0.0, 15.0)
+			} else {
+				if (level.id != levelId) {
+					level.setLevel(levelId)
+				}
+				camera.cameraPosition = CreateVector3((-1 + anim * anim) * 30.0 * changeLevelDirection, 0.0, 15.0)
+			}
+			return
+		}
 		if (input.key[32]) { // space
 			setState(gameState)
 		}
+		if (input.key[65] || input.key[37]) { // LEFT | A
+			if (levelId > 0) {
+				changeLevelAnim = 1.0
+				changeLevelDirection = -1.0
+				levelId -= 1
+			}
+		}
+		if (input.key[68] || input.key[39]) { // RIGHT | D
+			changeLevelAnim = 1.0
+			changeLevelDirection = 1.0
+			levelId += 1
+		}
+		level.update(dt)
 		currentMatrix = MultiplyMatrix3(currentMatrix, CreateRotationMatrix3(rotationAxe, 20.0 * dt))
 		rotationAxe = NormalizeVector3(
 			CreateVector3(
@@ -174,6 +179,12 @@
 				rotationAxe[2] * 100.0 + (Math.random() * 2.0 - 1)))
 		camera.worldMatrix = currentMatrix
 		camera.position = MultiplyVector3(camera.position, 1.0 - 1.0 * dt)
+
+		if (input.key[113]) { // F2
+			input.key[113] = false
+			needShowDebugInfo = !needShowDebugInfo
+			level.showDebugInfo(needShowDebugInfo)
+		}
 	}
 
 	function updatePauseState(dt) {
@@ -217,22 +228,14 @@
 				rotateAngle = -1.0 // right
 			}
 		}
-		snake.rotate(rotateAngle)
+		level.snake.rotate(rotateAngle)
+		level.snake.update(dt)
 
+		level.update(dt)
 
-		snake.update(dt)
-		for(let i = 0; i < apples.length; i++) {
-			apples[i].update(dt)
-			if (DistanceVector3(navigationMesh.heroPosition, apples[i].position) < 1.0) {
-				apples[i].removeApple(navigationMesh.getRandomPosition())
-        		snake.lenght += 0.5
-				applesCount += 1
-			}
-		}
+		camera.position = level.snake.position
 
-		camera.position = snake.position
-
-		let cameraVector = NormalizeVector3(snake.position)
+		let cameraVector = NormalizeVector3(level.snake.position)
 		let XZVector = NormalizeVector2([cameraVector[0], cameraVector[2]])
 		let YNVector = NormalizeVector2([cameraVector[1], Math.sqrt(cameraVector[0], cameraVector[2])])
 		let baseAngle = Math.acos(XZVector[0]) / Math.PI * 180.0
@@ -243,12 +246,10 @@
 		 	baseAngle = 90.0 - baseAngle
 		}
 		camera.worldMatrix = MultiplyMatrix3(CreateRotationMatrix3(CreateVector3(1.0), upAngle), CreateRotationMatrix3(CreateVector3(0.0, 1.0), baseAngle))
-		if (input.key[32]) { // space
-		}
 		if (input.key[113]) { // F2
 			input.key[113] = false
 			needShowDebugInfo = !needShowDebugInfo
-			ShowDebugInfo(needShowDebugInfo)
+			level.showDebugInfo(needShowDebugInfo)
 		}
 	}
 	
@@ -258,35 +259,13 @@
 			default:
 			case selectLevelState:
 				currentMatrix = camera.worldMatrix
-				snake.setEnabled(false)
+				level.hideLevelDetails()
 				break
 			case pauseState:
 				break
 			case gameState:
-				snake.setEnabled(true)
+				level.start()
 				break
-		}
-	}
-	
-	function ShowDebugInfo(needShow) {
-		if (navigationObjects == null) {
-			navigationObjects = []
-			for(let i = 0; i < navigationNodes.length; i++) {
-				let navigationTriangle = 
-					new Object3DTriangle(
-						navigationNodes[i].pointA,
-						navigationNodes[i].pointB,
-						navigationNodes[i].pointC,
-						"rgb(255,255,255)", false, false
-					)
-				navigationObjects.push(navigationTriangle)
-			}
-			navigationObjects.push(new Object3D(CreateVector3(8.0, 0.0, 0.0), 0.5, rgbToHex(255, 0, 0)))
-			navigationObjects.push(new Object3D(CreateVector3(0.0, 8.0, 0.0), 0.5, rgbToHex(0, 255, 0)))
-			navigationObjects.push(new Object3D(CreateVector3(0.0, 0.0, 8.0), 0.5, rgbToHex(0, 0, 255)))
-		}
-		for(let i = 0; i < navigationObjects.length; i++) {
-			navigationObjects[i].enabled = needShow;
 		}
 	}
 

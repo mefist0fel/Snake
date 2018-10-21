@@ -4,59 +4,143 @@ class Level {
     }
 
     setLevel(id) {
-	    //createSphere()// createDrawedCube()
+        this.id = id
+        Camera.instance.objects = []
+        this.navigationObjects = null
+        this.applesCount = 0
+        this.navigationNodes = []
+        let navigationTriangles = null
+        switch(id % 3) {
+            case 0:
+                createSphere()
+                navigationTriangles = CreateNavigationSphere()
+                break
+            case 1:
+                createCube(8.0)
+                navigationTriangles = CreateNavigationCube(9.0)
+                break
+            case 2:
+                createCilynder()
+                navigationTriangles = createNavigationCilynder()
+                break
+        }
+        for(let i = 0; i < navigationTriangles.length; i++) {
+            let points = navigationTriangles[i]
+            this.navigationNodes.push(
+                new NavigationNode(
+                    points[0],
+                    points[1],
+                    points[2]
+                )
+            )
+        }
+
+        this.navigationMesh = new NavigationMesh(this.navigationNodes)
+        this.snake = new Snake(this.navigationMesh)
+        this.snake.setEnabled(false)
+        this.apples = [
+            new Apple(CreateVector3()),
+            new Apple(CreateVector3()),
+            new Apple(CreateVector3())
+        ]
     }
+
+    update(dt) {
+		for(let i = 0; i < this.apples.length; i++) {
+			this.apples[i].update(dt)
+        }
+		for(let i = 0; i < this.apples.length; i++) {
+			if (DistanceVector3(this.navigationMesh.heroPosition, this.apples[i].position) < 1.0) {
+				this.apples[i].removeApple(this.navigationMesh.getRandomPosition())
+        		this.snake.lenght += 0.5
+				this.applesCount += 1
+			}
+		}
+    }
+
+    start() {
+        this.snake.setEnabled(true)
+        for(let i = 0; i < this.apples.length; i++) {
+            this.apples[i].removeApple(this.navigationMesh.getRandomPosition())
+        }
+    }
+
+    hideLevelDetails() {
+        this.snake.setEnabled(false)
+        for(let i = 0; i < this.apples.length; i++) {
+            this.apples[i].removeApple(CreateVector3())
+        }
+    }
+	
+	showDebugInfo(needShow) {
+		if (this.navigationObjects == null) {
+			this.navigationObjects = this.createNavigationInfo()
+		}
+		for(let i = 0; i < this.navigationObjects.length; i++) {
+			this.navigationObjects[i].enabled = needShow;
+		}
+	}
+	
+	createNavigationInfo() {
+		let navigationObjects = []
+        for(let i = 0; i < this.navigationNodes.length; i++) {
+            let navigationTriangle = 
+                new Object3DTriangle(
+                    this.navigationNodes[i].pointA,
+                    this.navigationNodes[i].pointB,
+                    this.navigationNodes[i].pointC,
+                    "rgb(255,255,255)", false, false
+                )
+                navigationObjects.push(navigationTriangle)
+        }
+        navigationObjects.push(new Object3D(CreateVector3(8.0, 0.0, 0.0), 0.5, rgbToHex(255, 0, 0)))
+        navigationObjects.push(new Object3D(CreateVector3(0.0, 8.0, 0.0), 0.5, rgbToHex(0, 255, 0)))
+        navigationObjects.push(new Object3D(CreateVector3(0.0, 0.0, 8.0), 0.5, rgbToHex(0, 0, 255)))
+        return navigationObjects
+	}
 }
 
-
-function createCube(size = 10.0) {
+function createCube(size = 10.0, segments = 11) {
     let objects = []
-    let edgeSize = size * 0.5
-    let color = '#FFFFFF'
-    // forw
-    let af = CreateVector3(-edgeSize, -edgeSize, edgeSize)
-    let bf = CreateVector3( edgeSize, -edgeSize, edgeSize)
-    let cf = CreateVector3( edgeSize,  edgeSize, edgeSize)
-    let df = CreateVector3(-edgeSize,  edgeSize, edgeSize)
-    objects.push(new Object3DTriangle(af, bf, cf, color))
-    objects.push(new Object3DTriangle(af, cf, df, color))
-    // backw
-    let ab = CreateVector3(-edgeSize, -edgeSize, -edgeSize)
-    let bb = CreateVector3( edgeSize, -edgeSize, -edgeSize)
-    let cb = CreateVector3( edgeSize,  edgeSize, -edgeSize)
-    let db = CreateVector3(-edgeSize,  edgeSize, -edgeSize)
-    objects.push(new Object3DTriangle(ab, cb, bb, color))
-    objects.push(new Object3DTriangle(ab, db, cb, color))
-    color = '#DDDDDD'
-    // top
-    let at = CreateVector3(-edgeSize, edgeSize, -edgeSize)
-    let bt = CreateVector3( edgeSize, edgeSize, -edgeSize)
-    let ct = CreateVector3( edgeSize, edgeSize,  edgeSize)
-    let dt = CreateVector3(-edgeSize, edgeSize,  edgeSize)
-    objects.push(new Object3DTriangle(at, ct, bt, color))
-    objects.push(new Object3DTriangle(at, dt, ct, color))
-    // down
-    let ad = CreateVector3(-edgeSize, -edgeSize, -edgeSize)
-    let bd = CreateVector3( edgeSize, -edgeSize, -edgeSize)
-    let cd = CreateVector3( edgeSize, -edgeSize,  edgeSize)
-    let dd = CreateVector3(-edgeSize, -edgeSize,  edgeSize)
-    objects.push(new Object3DTriangle(ad, bd, cd, color))
-    objects.push(new Object3DTriangle(ad, cd, dd, color))
-    color = '#AAAAAA'
-    // left
-    let al = CreateVector3(-edgeSize, -edgeSize, -edgeSize)
-    let bl = CreateVector3(-edgeSize,  edgeSize, -edgeSize)
-    let cl = CreateVector3(-edgeSize,  edgeSize,  edgeSize)
-    let dl = CreateVector3(-edgeSize, -edgeSize,  edgeSize)
-    objects.push(new Object3DTriangle(al, cl, bl, color))
-    objects.push(new Object3DTriangle(al, dl, cl, color))
-    // right
-    let ar = CreateVector3( edgeSize, -edgeSize, -edgeSize)
-    let br = CreateVector3( edgeSize,  edgeSize, -edgeSize)
-    let cr = CreateVector3( edgeSize,  edgeSize,  edgeSize)
-    let dr = CreateVector3( edgeSize, -edgeSize,  edgeSize)
-    objects.push(new Object3DTriangle(ar, br, cr, color))
-    objects.push(new Object3DTriangle(ar, cr, dr, color))
+    let segmentSize = 2.0 / (segments)
+    let halfSize = size * 0.5
+    let createPoint = function(x, y, segmentSize, size, sideMatrix) {
+        let point = CreateVector3(x * segmentSize - 1.0, y * segmentSize - 1.0, 1.0)
+        return MultiplyVector3ToMatrix3(MultiplyVector3(point, size), sideMatrix)
+    }
+    let sidesRotationMatrix = [
+        CreateMatrix3RotatedX(0.0),
+        CreateMatrix3RotatedX(90.0),
+        CreateMatrix3RotatedX(180.0),
+        CreateMatrix3RotatedX(270.0),
+        CreateMatrix3RotatedY(90.0),
+        CreateMatrix3RotatedY(270.0)
+    ]
+    let fakeLight = [
+        0.5,
+        0.6,
+        0.7,
+        0.8,
+        0.9,
+        1.0
+    ]
+    for(let sideId = 0; sideId < sidesRotationMatrix.length; sideId ++) {
+        for (let i = 0; i < segments; i++) {
+            for (let j = 0; j < segments; j++) {
+                let af = createPoint(     i,     j, segmentSize, halfSize, sidesRotationMatrix[sideId])
+                let bf = createPoint( i + 1,     j, segmentSize, halfSize, sidesRotationMatrix[sideId])
+                let cf = createPoint( i + 1, j + 1, segmentSize, halfSize, sidesRotationMatrix[sideId])
+                let df = createPoint(     i, j + 1, segmentSize, halfSize, sidesRotationMatrix[sideId])
+                let lightColor = parseInt((fakeLight[sideId]) * 255.0)
+                let darkColor = parseInt((fakeLight[sideId]) * 195.0)
+                let color = rgbToHex(lightColor, lightColor, lightColor)
+                if ((i + j) % 2 == 1)
+                    color = rgbToHex(darkColor, darkColor, darkColor)
+                objects.push(new Object3DTriangle(af, bf, cf, color))
+                objects.push(new Object3DTriangle(af, cf, df, color))
+            }
+        }
+    }
     return objects
 }
 
@@ -104,66 +188,6 @@ function pointsByIds(points, faceIds) {
         ])
     }
     return mesh
-}
-
-function createDrawedCube(size = 5) {
-	let objects = []
-	for (let i = -size; i < size; i++) {
-	 	for (let j = -size; j < size; j++) {
-            let color = '#FFFFFF'
-            if ((parseInt(size + i * 0.5 + 0.5) + parseInt(size + j * 0.5 + 0.5)) % 2 == 1)
-                color = '#AAAAAA'
-            // forw
-            let af = CreateVector3( i    , j    , size)
-            let bf = CreateVector3( i + 1, j    , size)
-            let cf = CreateVector3( i + 1, j + 1, size)
-            let df = CreateVector3( i    , j + 1, size)
-            objects.push(new Object3DTriangle(af, bf, cf, color))
-            objects.push(new Object3DTriangle(af, cf, df, color))
-            // backw
-            let ab = CreateVector3( i    , j    ,-size)
-            let bb = CreateVector3( i + 1, j    ,-size)
-            let cb = CreateVector3( i + 1, j + 1,-size)
-            let db = CreateVector3( i    , j + 1,-size)
-            objects.push(new Object3DTriangle(ab, cb, bb, color))
-            objects.push(new Object3DTriangle(ab, db, cb, color))
-            color = '#DDDDDD'
-            if ((parseInt(size + i * 0.5 + 0.5) + parseInt(size + j * 0.5 + 0.5)) % 2 == 1)
-                color = '#888888'
-            // top
-            let at = CreateVector3( i    , size, j    )
-            let bt = CreateVector3( i + 1, size, j    )
-            let ct = CreateVector3( i + 1, size, j + 1)
-            let dt = CreateVector3( i    , size, j + 1)
-            objects.push(new Object3DTriangle(at, ct, bt, color))
-            objects.push(new Object3DTriangle(at, dt, ct, color))
-            // down
-            let ad = CreateVector3( i    , -size, j    )
-            let bd = CreateVector3( i + 1, -size, j    )
-            let cd = CreateVector3( i + 1, -size, j + 1)
-            let dd = CreateVector3( i    , -size, j + 1)
-            objects.push(new Object3DTriangle(ad, bd, cd, color))
-            objects.push(new Object3DTriangle(ad, cd, dd, color))
-            color = '#BBBBBB'
-            if ((parseInt(size + i * 0.5 + 0.5) + parseInt(size + j * 0.5 + 0.5)) % 2 == 1)
-                color = '#666666'
-            // left
-            let al = CreateVector3(-size, i    , j    )
-            let bl = CreateVector3(-size, i + 1, j    )
-            let cl = CreateVector3(-size, i + 1, j + 1)
-            let dl = CreateVector3(-size, i    , j + 1)
-            objects.push(new Object3DTriangle(al, cl, bl, color))
-            objects.push(new Object3DTriangle(al, dl, cl, color))
-            // right
-            let ar = CreateVector3( size, i    , j    )
-            let br = CreateVector3( size, i + 1, j    )
-            let cr = CreateVector3( size, i + 1, j + 1)
-            let dr = CreateVector3( size, i    , j + 1)
-            objects.push(new Object3DTriangle(ar, br, cr, color))
-            objects.push(new Object3DTriangle(ar, cr, dr, color))
-        }
-    }
-    return objects
 }
 
 function createSphere(radius = 5.0, segments = 9) {
@@ -244,7 +268,94 @@ function CreateNavigationSphere(radius = 5.0, navigationRadius = 0.5, segments =
     return navigationTriangles
 }
 
-function createCilynder(sides = 16, radius = 5.0, height = 10.0) {
+function createCilynder(sides = 32, radius = 5.0, height = 8.0, heightSegments = 8, radiusSegment = 6) {
+    let objects = []
+	let radiusVectors = []
+	for (let i = 0; i <= sides; i++) {
+		let angle = 360.0 / sides * i
+		var sideVector = MultiplyVector3ToMatrix3(CreateVector3(radius, 0, 0), CreateMatrix3RotatedY(angle))
+		radiusVectors.push(sideVector)
+	}
+	let centerUpPoint = CreateVector3(0, height * 0.5, 0)
+    let centerDownPoint = CreateVector3(0, -height * 0.5, 0)
+    let heightSize = 1.0 / heightSegments
+    let radSize = 1.0 / radiusSegment
+	for (let i = 0; i < sides; i++) {
+		let color = '#FFFFFF'
+		if (i % 2 == 1)
+			color = '#666666'
+		let upStart = AddVector3(centerUpPoint, radiusVectors[i])
+		let upEnd = AddVector3(centerUpPoint, radiusVectors[i + 1])
+		let downStart = AddVector3(centerDownPoint, radiusVectors[i])
+		let downEnd = AddVector3(centerDownPoint, radiusVectors[i + 1])
+		// objects.push(new Object3DTriangle(centerUpPoint, upStart, upEnd, color))
+        // objects.push(new Object3DTriangle(centerDownPoint, downEnd, downStart, color))
+        for(let j = 0; j < radiusSegment; j++) {
+            let colorShift = (radiusSegment - j) * radSize * 30
+            color = rgbToHex(195 + colorShift, 195 + colorShift, 195 + colorShift)
+            if ((i + j) % 2 == 1)
+                color = rgbToHex(255 - colorShift, 255 - colorShift, 255 - colorShift)
+            upperStart = LerpVector3(centerUpPoint, upStart, j * radSize)
+            upperEnd = LerpVector3(centerUpPoint, upEnd, j * radSize)
+            downerStart = LerpVector3(centerUpPoint, upStart, (j + 1) * radSize)
+            downerEnd = LerpVector3(centerUpPoint, upEnd, (j + 1) * radSize)
+            objects.push(new Object3DTriangle(upperStart, downerEnd, upperEnd, color))
+            objects.push(new Object3DTriangle(upperStart, downerStart, downerEnd, color))
+        }
+        for(let j = 0; j < radiusSegment; j++) {
+            let colorShift = (radiusSegment - j) * radSize * 30
+            color = rgbToHex(195 + colorShift, 195 + colorShift, 195 + colorShift)
+            if ((i + j) % 2 == 1)
+                color = rgbToHex(255 - colorShift, 255 - colorShift, 255 - colorShift)
+            upperStart = LerpVector3(centerDownPoint, downStart, (j + 1) * radSize)
+            upperEnd = LerpVector3(centerDownPoint, downEnd, (j + 1) * radSize)
+            downerStart = LerpVector3(centerDownPoint, downStart, j * radSize)
+            downerEnd = LerpVector3(centerDownPoint, downEnd, j * radSize)
+            objects.push(new Object3DTriangle(upperStart, downerEnd, upperEnd, color))
+            objects.push(new Object3DTriangle(upperStart, downerStart, downerEnd, color))
+        }
+        for(let j = 0; j < heightSegments; j++) {
+            let fakeLight = upStart[0] / radius * 0.5 + 0.5
+            let lightColor = parseInt((fakeLight * 0.6 + 0.4) * 255.0)
+            let darkColor = parseInt((fakeLight * 0.6 + 0.4) * 195.0)
+            color = rgbToHex(lightColor, lightColor, lightColor)
+            if ((i + j) % 2 == 1)
+                color = rgbToHex(darkColor, darkColor, darkColor)
+            upperStart = LerpVector3(upStart, downStart, j * heightSize)
+            upperEnd = LerpVector3(upEnd, downEnd, j * heightSize)
+            downerStart = LerpVector3(upStart, downStart, (j + 1) * heightSize)
+            downerEnd = LerpVector3(upEnd, downEnd, (j + 1) * heightSize)
+            objects.push(new Object3DTriangle(upperStart, downerEnd, upperEnd, color))
+            objects.push(new Object3DTriangle(upperStart, downerStart, downerEnd, color))
+        }
+    }
+    return objects
+}
+
+function createNavigationCilynder(sides = 16, radius = 5.0, height = 8.0, navigationRadius = 0.5) {
+    let navigationTriangles = []
+	let radiusVectors = []
+	for (let i = 0; i <= sides; i++) {
+		let angle = 360.0 / sides * i
+		var sideVector = MultiplyVector3ToMatrix3(CreateVector3(radius + navigationRadius, 0, 0), CreateMatrix3RotatedY(angle))
+		radiusVectors.push(sideVector)
+	}
+	let centerUpPoint = CreateVector3(0, height * 0.5 + navigationRadius, 0)
+    let centerDownPoint = CreateVector3(0, -height * 0.5 - navigationRadius, 0)
+	for (let i = 0; i < sides; i++) {
+		let upStart = AddVector3(centerUpPoint, radiusVectors[i])
+		let upEnd = AddVector3(centerUpPoint, radiusVectors[i + 1])
+		let downStart = AddVector3(centerDownPoint, radiusVectors[i])
+		let downEnd = AddVector3(centerDownPoint, radiusVectors[i + 1])
+		navigationTriangles.push([centerUpPoint, upStart, upEnd])
+        navigationTriangles.push([centerDownPoint, downEnd, downStart])
+        navigationTriangles.push([upStart, downEnd, upEnd])
+        navigationTriangles.push([upStart, downStart, downEnd])
+    }
+    return navigationTriangles
+}
+
+function createCilynderOld(sides = 16, radius = 5.0, height = 10.0) {
 	let objects = []
 	let radiusVectors = []
 	for (let i = 0; i <= sides; i++) {
