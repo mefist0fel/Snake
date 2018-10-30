@@ -1,3 +1,9 @@
+const MAX_NUMBER = Number.MAX_VALUE
+const MIN_NUMBER = Number.MIN_VALUE
+const PI = Math.PI
+const Cos = Math.cos
+const Sin = Math.sin
+
 function inRect(x, y, rsx, rsy, rex, rey) { // Rect start x/y and Rect end x/y
 	return (x >= rsx) && (x <= rex) && (y >= rsy) && (y <= rey)
 }
@@ -33,10 +39,10 @@ function Vector2Length(v) {
 function NormalizeVector2(v) {
 	var dist = 1.0 / Vector2Length(v);
 	if (dist == Infinity) {
-		dist = Number.MAX_VALUE;
+		dist = MAX_NUMBER;
 	}
 	if (dist == -Infinity) {
-		dist = Number.MIN_VALUE;
+		dist = MIN_NUMBER;
 	}
 	return MultiplyVector2(v, dist);
 }
@@ -81,7 +87,7 @@ function DotProductVector3(a, b) {
 }
 
 function AngleBetweenVector3(a, b) {
-	return Math.acos(DotProductVector3(NormalizeVector3(a), NormalizeVector3(b))) / Math.PI * 180.0
+	return Math.acos(DotProductVector3(NormalizeVector3(a), NormalizeVector3(b))) / PI * 180.0
 }
 
 function AxeBetweenVector3(a, b) {
@@ -112,13 +118,13 @@ function DistanceVector3(a, b) {
 function NormalizeVector3(v) {
 	let dist = 1.0 / Vector3Length(v)
 	if (dist == NaN) {
-		dist = Number.MAX_VALUE
+		dist = MAX_NUMBER
 	}
 	if (dist == Infinity) {
-		dist = Number.MAX_VALUE
+		dist = MAX_NUMBER
 	}
 	if (dist == -Infinity) {
-		dist = Number.MIN_VALUE
+		dist = MIN_NUMBER
 	}
 	return MultiplyVector3(v, dist)
 }
@@ -149,9 +155,9 @@ function CreateUnitMatrix3() {
 
 function CreateMatrix3RotatedX(angle = 0.0) {
 	// angles in radians
-	var a = angle / 180.0 * Math.PI
-	var ca = Math.cos(a)
-	var sa = Math.sin(a)
+	var a = angle / 180.0 * PI
+	var ca = Cos(a)
+	var sa = Sin(a)
 	return [
 		1,  0,  0,
 		0, ca,-sa,
@@ -161,9 +167,9 @@ function CreateMatrix3RotatedX(angle = 0.0) {
 
 function CreateMatrix3RotatedY(angle = 0.0) {
 	// angles in radians
-	var a = angle / 180.0 * Math.PI
-	var ca = Math.cos(a)
-	var sa = Math.sin(a)
+	var a = angle / 180.0 * PI
+	var ca = Cos(a)
+	var sa = Sin(a)
 	return [
 		 ca,  0, sa,
 		  0,  1,  0,
@@ -173,9 +179,9 @@ function CreateMatrix3RotatedY(angle = 0.0) {
 
 function CreateMatrix3RotatedZ(angle = 0.0) {
 	// angles in radians
-	var a = angle / 180.0 * Math.PI
-	var ca = Math.cos(a)
-	var sa = Math.sin(a)
+	var a = angle / 180.0 * PI
+	var ca = Cos(a)
+	var sa = Sin(a)
 	return [
 		 ca,-sa, 0,
 		 sa, ca, 0,
@@ -185,15 +191,15 @@ function CreateMatrix3RotatedZ(angle = 0.0) {
 
 function CreateEulerMatrix3(xAngle = 0.0, yAngle = 0.0, zAngle = 0.0) {
 	// angles in radians
-	var a = xAngle / 180.0 * Math.PI
-	var b = yAngle / 180.0 * Math.PI
-	var y = zAngle / 180.0 * Math.PI
-	var ca = Math.cos(a)
-	var cb = Math.cos(b)
-	var cy = Math.cos(y)
-	var sa = Math.sin(a)
-	var sb = Math.sin(b)
-	var sy = Math.sin(y)
+	var a = xAngle / 180.0 * PI
+	var b = yAngle / 180.0 * PI
+	var y = zAngle / 180.0 * PI
+	var ca = Cos(a)
+	var cb = Cos(b)
+	var cy = Cos(y)
+	var sa = Sin(a)
+	var sb = Sin(b)
+	var sy = Sin(y)
 	return [
 		ca * cy - sa * sb * cy,  -ca * sy - sa * cb * cy,  sa * sb,
 		sa * cy + ca * cb * sy,  -sa * sy + ca * cb * cy, -ca * sb,
@@ -205,9 +211,9 @@ function CreateRotationMatrix3(axeVector, angle) { // axe vector must be unit
 	let u = axeVector[0]
 	let v = axeVector[1]
 	let w = axeVector[2]
-	let radian = angle / 180.0 * Math.PI
-	let c = Math.cos(radian)
-	let s = Math.sin(radian)
+	let radian = angle / 180.0 * PI
+	let c = Cos(radian)
+	let s = Sin(radian)
 	let q = (1.0 - c)
 	return [
 		u * u + (1.0 - u * u) * c, 	u * v * q - w * s, 			u * w * q + v * s,

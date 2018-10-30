@@ -63,15 +63,20 @@ function Input() {
 	function onTouchCancel(event) {
 	}
 
-	document.addEventListener('keydown',     onKeyDown,    false)
-	document.addEventListener('keyup',       onKeyUp,      false)
-	document.addEventListener('click',		 onClick,	  false)
-	document.addEventListener('mousedown',   mouseDown,	  false)
-	document.addEventListener('mouseup',	 mouseUp,	  false)
-	document.addEventListener('mousemove',	 mouseMove,	  false)
-	document.addEventListener('touchstart',  onTouchStart, false)
-	document.addEventListener('touchmove',	 onTouchMove,  false)
-	document.addEventListener("touchend", 	 onTouchEnd, false);
-	document.addEventListener("touchcancel", onTouchCancel, false);
+	function addListener(type, callback) {
+		document.addEventListener(type, callback)
+	}
+
+	addListener('keydown',		onKeyDown)
+	addListener('keyup',		onKeyUp)
+	addListener('click',		onClick)
+	addListener('mousedown',	mouseDown)
+	addListener('mouseup',		mouseUp)
+	addListener('mousemove',	mouseMove)
+	addListener('touchstart',	onTouchStart)
+	addListener('touchmove',	onTouchMove)
+	addListener("touchend",		onTouchEnd);
+	addListener("touchcancel",	onTouchCancel);
+
 	return input;
 }

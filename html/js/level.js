@@ -385,54 +385,27 @@ function createNavigationCilynder(sides = 16, radius = 4.0, height = 7.0, naviga
     return navigationTriangles
 }
 
-function createCilynderOld(sides = 16, radius = 5.0, height = 10.0) {
-	let objects = []
+function createRotationBody(points, sides = 16) { // points - Vector3 list
+    let navigationTriangles = []
 	let radiusVectors = []
 	for (let i = 0; i <= sides; i++) {
 		let angle = 360.0 / sides * i
-		var sideVector = MultiplyVector3ToMatrix3(CreateVector3(radius, 0, 0), CreateMatrix3RotatedY(angle))
+		var sideVector = MultiplyVector3ToMatrix3(CreateVector3(radius + navigationRadius, 0, 0), CreateMatrix3RotatedY(angle))
 		radiusVectors.push(sideVector)
 	}
-	let centerUpPoint = CreateVector3(0, height * 0.5, 0)
-	let centerDownPoint = CreateVector3(0, -height * 0.5, 0)
+	let centerUpPoint = CreateVector3(0, height * 0.5 + navigationRadius, 0)
+    let centerDownPoint = CreateVector3(0, -height * 0.5 - navigationRadius, 0)
 	for (let i = 0; i < sides; i++) {
-		let color = '#FFFFFF'
-		if (i % 2 == 1)
-			color = '#666666'
 		let upStart = AddVector3(centerUpPoint, radiusVectors[i])
 		let upEnd = AddVector3(centerUpPoint, radiusVectors[i + 1])
 		let downStart = AddVector3(centerDownPoint, radiusVectors[i])
 		let downEnd = AddVector3(centerDownPoint, radiusVectors[i + 1])
-		objects.push(new Object3DTriangle(centerUpPoint, upStart, upEnd, color))
-		objects.push(new Object3DTriangle(centerDownPoint, downEnd, downStart, color))
-		objects.push(new Object3DTriangle(upStart, downEnd, upEnd, color))
-		objects.push(new Object3DTriangle(upStart, downStart, downEnd, color))
+		navigationTriangles.push([centerUpPoint, upStart, upEnd])
+        navigationTriangles.push([centerDownPoint, downEnd, downStart])
+        navigationTriangles.push([upStart, downEnd, upEnd])
+        navigationTriangles.push([upStart, downStart, downEnd])
     }
-    return objects
-}
-
-function createDotCube(size = 5) {
-    let objects = []
-    for (let i = -size; i <= size; i++) {
-        for (let j = -size; j <= size; j++) {
-            objects.push(createObject( i, j, size))
-            objects.push(createObject( i, j,-size))
-            objects.push(createObject( i, size, j))
-            objects.push(createObject( i,-size, j))
-            objects.push(createObject( size, i, j))
-            objects.push(createObject(-size, i, j))
-        }
-    }
-    return objects
-}
-
-function createObject(x, y, z) {
-    let position = CreateVector3(x, y, z)
-    var r = parseInt((x + 5) * 255 / 10)
-    var g = parseInt((y + 5) * 255 / 10)
-    var b = parseInt((z + 5) * 255 / 10)
-    let color = rgbToHex(r, g, b)
-    return new Object3D(position, 0.5, color)
+    return navigationTriangles
 }
 
 function rgbToHex(r, g, b, a = 255) {
