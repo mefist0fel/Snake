@@ -44,9 +44,9 @@ class Level {
         this.snake = new Snake(this.navigationMesh)
         this.snake.setEnabled(false)
         this.apples = [
-            new Apple(CreateVector3(), rgbToHex(255, 0, 0)),
-            new Apple(CreateVector3(), rgbToHex(255, 0, 0)),
-            new Apple(CreateVector3(), rgbToHex(255, 0, 0))
+            new Apple(CreateVector3(), rgbToHex(51,255,51)),
+            new Apple(CreateVector3(), rgbToHex(51,255,51)),
+            new Apple(CreateVector3(), rgbToHex(51,255,51))
         ]
         this.rocks = []
         for(let i = 0; i < this.needRocks; i++) {

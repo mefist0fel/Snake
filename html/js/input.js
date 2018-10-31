@@ -15,7 +15,17 @@ function Input() {
 	var input = {
 		key: [200],
 		mouseLeft: false,
-		mousePosition: [0, 0]
+		mousePosition: [0, 0],
+		touches: [],
+		isTouchRect: function (rectSX, rectSY, rectEX, rectEY) {
+			if (this.mouseLeft && inRect(this.mousePosition[0], this.mousePosition[1], rectSX, rectSY, rectEX, rectEY))
+				return true
+			for(let i = 0; i < this.touches.length; i++) {
+				if (inRect(this.touches[i][0], this.touches[i][1], rectSX, rectSY, rectEX, rectEY))
+					return true
+			}
+			return false
+		}
 	}
 	for(var i = 0; i < 200; i++) {
 		input.key[i] = false
@@ -51,20 +61,16 @@ function Input() {
 		input.mousePosition[1] = event.clientY
 	}
 
-	function onTouchStart(event) {
-	}
-
-	function onTouchMove(event) {
-	}
-
-	function onTouchEnd(event) {
-	}
-
-	function onTouchCancel(event) {
+	function onTouch(event) {
+		input.touches = []
+		for(let i = 0; i < event.touches.length; i++) {
+			input.touches.push([event.touches[i].clientX, event.touches[i].clientY])
+		}
+		event.preventDefault()
 	}
 
 	function addListener(type, callback) {
-		document.addEventListener(type, callback)
+		document.addEventListener(type, callback, {passive: false})
 	}
 
 	addListener('keydown',		onKeyDown)
@@ -73,10 +79,10 @@ function Input() {
 	addListener('mousedown',	mouseDown)
 	addListener('mouseup',		mouseUp)
 	addListener('mousemove',	mouseMove)
-	addListener('touchstart',	onTouchStart)
-	addListener('touchmove',	onTouchMove)
-	addListener("touchend",		onTouchEnd);
-	addListener("touchcancel",	onTouchCancel);
+	addListener('touchstart',	onTouch)
+	addListener('touchmove',	onTouch)
+	addListener("touchend",		onTouch);
+	addListener("touchcancel",	onTouch);
 
 	return input;
 }

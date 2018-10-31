@@ -431,7 +431,8 @@ function MultiplyMatrix4(ma, mb) {
 	var input = {
 		key: [200],
 		mouseLeft: false,
-		mousePosition: [0, 0]
+		mousePosition: [0, 0],
+		touches: []
 	}
 	for(var i = 0; i < 200; i++) {
 		input.key[i] = false
@@ -467,28 +468,25 @@ function MultiplyMatrix4(ma, mb) {
 		input.mousePosition[1] = event.clientY
 	}
 
-	function onTouchStart(event) {
+	function onTouch(event) {
+		input.touches = []
+		for(let i = 0; i < event.touches.length; i++) {
+			input.touches.push([event.touches[i].clientX, event.touches[i].clientY])
+		}
+		event.preventDefault()
 	}
 
-	function onTouchMove(event) {
-	}
-
-	function onTouchEnd(event) {
-	}
-
-	function onTouchCancel(event) {
-	}
-
-	document.addEventListener('keydown',     onKeyDown,    false)
-	document.addEventListener('keyup',       onKeyUp,      false)
-	document.addEventListener('click',		 onClick,	  false)
-	document.addEventListener('mousedown',   mouseDown,	  false)
-	document.addEventListener('mouseup',	 mouseUp,	  false)
-	document.addEventListener('mousemove',	 mouseMove,	  false)
-	document.addEventListener('touchstart',  onTouchStart, false)
-	document.addEventListener('touchmove',	 onTouchMove,  false)
-	document.addEventListener("touchend", 	 onTouchEnd, false);
-	document.addEventListener("touchcancel", onTouchCancel, false);
+	let passiveListenerMark = {passive: false}
+	document.addEventListener('keydown',     onKeyDown,	passiveListenerMark)
+	document.addEventListener('keyup',       onKeyUp,	passiveListenerMark)
+	document.addEventListener('click',		 onClick,	passiveListenerMark)
+	document.addEventListener('mousedown',   mouseDown,	passiveListenerMark)
+	document.addEventListener('mouseup',	 mouseUp,	passiveListenerMark)
+	document.addEventListener('mousemove',	 mouseMove,	passiveListenerMark)
+	document.addEventListener('touchstart',  onTouch, 	passiveListenerMark)
+	document.addEventListener('touchmove',	 onTouch, 	passiveListenerMark)
+	document.addEventListener('touchend', 	 onTouch, 	passiveListenerMark)
+	document.addEventListener("touchcancel", onTouch, 	passiveListenerMark)
 	return input;
 }
 
@@ -1409,6 +1407,13 @@ class NavigationMesh {
 			canvas.textAlign = "end";
 			canvas.fillText(parseInt(fps), width - 30, 50)
 		}
+		let touches = ""
+		canvas.textAlign = "start";
+		for(let i = 0; i < input.touches.length; i++) {
+			touches += input.touches[i] + "\n" 
+		}
+		touches += input.mousePosition + "\n"
+		canvas.fillText("touches:\n" + touches, 10, 30)
 	}
 
 	function renderSelectLevelState() {

@@ -189,6 +189,18 @@ function updateSelectLevelState(dt) {
         changeLevelDirection = 1.0
         levelId += 1
     }
+    if (input.isTouchRect(0, 0, width * 0.5, height)) {
+        if (levelId > 0) {
+            changeLevelAnim = 1.0
+            changeLevelDirection = -1.0
+            levelId -= 1
+        }
+    }
+    if (input.isTouchRect(width * 0.5, 0, width, height)) {
+        changeLevelAnim = 1.0
+        changeLevelDirection = 1.0
+        levelId += 1
+    }
     level.update(dt)
     currentMatrix = MultiplyMatrix3(currentMatrix, CreateRotationMatrix3(rotationAxe, 20.0 * dt))
     rotationAxe = NormalizeVector3(
@@ -307,13 +319,11 @@ function updateGameState(dt) {
     if (input.key[68] || input.key[39]) { // RIGHT | D
         rotateAngle = -1.0
     }
-    if (input.mouseLeft) {
-        if (inRect(input.mousePosition[0], input.mousePosition[1], 0.0, height * 0.5, width * 0.3, height * 1.0)) {
-            rotateAngle = 1.0 // left
-        }
-        if (inRect(input.mousePosition[0], input.mousePosition[1], width * 0.7, height * 0.5, width * 1.0, height * 1.0)) {
-            rotateAngle = -1.0 // right
-        }
+    if (input.isTouchRect(0, 0, width * 0.5, height)) {
+        rotateAngle = 1.0 // left
+    }
+    if (input.isTouchRect(width * 0.5, 0, width, height)) {
+        rotateAngle = -1.0 // right
     }
     level.snake.rotate(rotateAngle)
     level.snake.update(dt)
@@ -334,6 +344,10 @@ function updateGameState(dt) {
     if (level.livesCount <= 0) {
         setState(loseState)
     }
+}
+
+function isTouchRect() {
+
 }
 
 function getCameraRotation(position) {
