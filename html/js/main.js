@@ -265,17 +265,20 @@ function updateSelectLevelState(dt) {
         changeLevelDirection = 1.0
         levelId += 1
     }
-    if (input.isTouchRect(0, 0, width * 0.5, height)) {
+    if (input.isTouchRect(0, height * 0.5, width * 0.3, height)) {
         if (levelId > 0) {
             changeLevelAnim = 1.0
             changeLevelDirection = -1.0
             levelId -= 1
         }
     }
-    if (input.isTouchRect(width * 0.5, 0, width, height)) {
+    if (input.isTouchRect(width * 0.7, height * 0.5, width, height)) {
         changeLevelAnim = 1.0
         changeLevelDirection = 1.0
         levelId += 1
+    }
+    if (input.isTouchRect(width * 0.4, height * 0.5, width * 0.6, height)) {
+        setState(startGameState)
     }
     level.update(dt)
     currentMatrix = MultiplyMatrix3(currentMatrix, CreateRotationMatrix3(rotationAxe, 20.0 * dt))
@@ -326,6 +329,10 @@ function updateWinState(dt) {
         changeLevelAnim = 1.0
         changeLevelDirection = 1.0
     }
+    if (input.isTouchRect(0, 0, width, height)) {
+        changeLevelAnim = 1.0
+        changeLevelDirection = 1.0
+    }
     level.update(dt)
 }
 
@@ -358,6 +365,9 @@ function updateLoseState(dt) {
     if (input.key[32]) { // space
         input.key[32] = false
         setState(startGameState)
+    }
+    if (input.isTouchRect(0, 0, width, height)) {
+        setState(selectLevelState)
     }
     level.update(dt)
 }
@@ -493,6 +503,5 @@ function SetCanvasSize(width, height) {
         fontSize *= width / height
     }
     canvas.font = parseInt(fontSize) + "pt Arial"
-    console.log(parseInt(fontSize) + "pt Arial")
     camera.setSize(width, height)
 }
