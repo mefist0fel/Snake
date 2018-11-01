@@ -14,7 +14,7 @@ function Input() {
 	//	TILDA:    192
 
 	var input = {
-		key: [200],
+		key: [],
 		mouseLeft: false,
 		mousePosition: [0, 0],
 		touches: [],
@@ -26,11 +26,14 @@ function Input() {
 					return true
 			}
 			return false
+		},
+		clearKeys: function () {
+			for(var i = 0; i < 200; i++) {
+				this.key[i] = false
+			}
 		}
 	}
-	for(var i = 0; i < 200; i++) {
-		input.key[i] = false
-	}
+	input.clearKeys()
 
 	function setKey(keyCode, value) {
 		input.key[keyCode] = value
