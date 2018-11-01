@@ -20,9 +20,85 @@
 		<canvas id="snake"></canvas>
 	</body>
 	<script type="text/javascript">
-	
-	
-	const MAX_NUMBER = Number.MAX_VALUE
+	class Apple {
+    constructor(positionVector3, color, radius = 0.4, animSpeed = 6.0) {
+		this.position = positionVector3
+		this.object3d = new Object3D(positionVector3, 0.0, color)
+		this.radius = radius
+		this.anim = 0.0
+        this.animSpeed = animSpeed
+    }
+
+    remove (position) {
+        this.position = position
+        this.anim = -Math.abs(this.anim)
+    }
+
+	update (dt) {
+        if (this.anim < 1.0) {
+            let newValue = this.anim + this.animSpeed * dt
+            if (newValue > 1.0) {
+                newValue = 1.0
+            } else {
+                if (this.anim < 0 && newValue > 0) {
+                    this.object3d.position = this.position
+                }
+            }
+            this.anim = newValue
+            this.object3d.setRadius(this.radius * Math.abs(this.anim))
+        }
+	}
+}class Camera {
+    constructor(canvas, width = 100.0, height = 100.0) {
+        this.objects = []
+        this.setSize(width, height)
+        this.worldMatrix = CreateUnitMatrix3()
+        this.projectionMatrix = CreateProjectionMatrix4(1.0, 1.0, 1.0, 2.0)
+        this.cameraPosition = CreateVector3(0.0, 0.0, 20.0)
+        this.position = CreateVector3()
+        this.canvas = canvas
+
+        Camera.instance = this
+    }
+
+    setSize(width, height) {
+        this.screenWidht = width;
+        this.screenHeight = height;
+        this.centerOffcet = CreateVector3(width * 0.5, height * 0.5)
+        this.screenScale = Math.min(width, height)
+    }
+
+    render () {
+		for (let i = 0; i < this.objects.length; i++) {
+			this.objects[i].prepareScene(this)
+		}
+		this.objects.sort(object3DDepthComparator)
+		for (let i = 0; i < this.objects.length; i++) {
+			this.objects[i].draw(this.canvas)
+		}
+    }
+
+    worldToScreenVector3 (point) {
+        let worldPoint = point
+        worldPoint = AddVector3(worldPoint, MultiplyVector3(this.position, -1.0))
+        worldPoint = MultiplyVector3ToMatrix3(worldPoint, this.worldMatrix)
+        worldPoint = AddVector3(worldPoint, this.cameraPosition)
+        worldPoint = MultiplyVector3ToMatrix4(worldPoint, this.projectionMatrix)
+        worldPoint = MultiplyVector3(worldPoint, this.screenScale)
+        return AddVector3(worldPoint, this.centerOffcet)
+    }
+
+    worldToScreenVector3WithOffcet (point, offcet) {
+        let worldPoint = point
+        worldPoint = AddVector3(worldPoint, MultiplyVector3(this.position, -1.0))
+        worldPoint = MultiplyVector3ToMatrix3(worldPoint, this.worldMatrix)
+        worldPoint = AddVector3(worldPoint, this.cameraPosition)
+        worldPoint = AddVector3(worldPoint, offcet)
+        worldPoint = MultiplyVector3ToMatrix4(worldPoint, this.projectionMatrix)
+        worldPoint = MultiplyVector3(worldPoint, this.screenScale)
+        return AddVector3(worldPoint, this.centerOffcet)
+    }
+}const MAX_NUMBER = Number.MAX_VALUE
 const MIN_NUMBER = Number.MIN_VALUE
 const PI = Math.PI
 const Cos = Math.cos
@@ -410,11 +486,7 @@ function MultiplyMatrix4(ma, mb) {
 		ma[12] * mb[ 2] + ma[13] * mb[ 6] + ma[14] * mb[10]  + ma[15] * mb[14],
 		ma[12] * mb[ 3] + ma[13] * mb[ 7] + ma[14] * mb[11]  + ma[15] * mb[15]
 	]
-}
-	
-	
-	
-	function Input() {
+}function Input() {
 	//  KEY KODES
 	//	BACKSPACE: 8,
 	//	TAB:       9,	RETURN:   13,
@@ -432,7 +504,16 @@ function MultiplyMatrix4(ma, mb) {
 		key: [200],
 		mouseLeft: false,
 		mousePosition: [0, 0],
-		touches: []
+		touches: [],
+		isTouchRect: function (rectSX, rectSY, rectEX, rectEY) {
+			if (this.mouseLeft && inRect(this.mousePosition[0], this.mousePosition[1], rectSX, rectSY, rectEX, rectEY))
+				return true
+			for(let i = 0; i < this.touches.length; i++) {
+				if (inRect(this.touches[i][0], this.touches[i][1], rectSX, rectSY, rectEX, rectEY))
+					return true
+			}
+			return false
+		}
 	}
 	for(var i = 0; i < 200; i++) {
 		input.key[i] = false
@@ -476,157 +557,22 @@ function MultiplyMatrix4(ma, mb) {
 		event.preventDefault()
 	}
 
-	let passiveListenerMark = {passive: false}
-	document.addEventListener('keydown',     onKeyDown,	passiveListenerMark)
-	document.addEventListener('keyup',       onKeyUp,	passiveListenerMark)
-	document.addEventListener('click',		 onClick,	passiveListenerMark)
-	document.addEventListener('mousedown',   mouseDown,	passiveListenerMark)
-	document.addEventListener('mouseup',	 mouseUp,	passiveListenerMark)
-	document.addEventListener('mousemove',	 mouseMove,	passiveListenerMark)
-	document.addEventListener('touchstart',  onTouch, 	passiveListenerMark)
-	document.addEventListener('touchmove',	 onTouch, 	passiveListenerMark)
-	document.addEventListener('touchend', 	 onTouch, 	passiveListenerMark)
-	document.addEventListener("touchcancel", onTouch, 	passiveListenerMark)
+	function addListener(type, callback) {
+		document.addEventListener(type, callback, {passive: false})
+	}
+
+	addListener('keydown',		onKeyDown)
+	addListener('keyup',		onKeyUp)
+	addListener('click',		onClick)
+	addListener('mousedown',	mouseDown)
+	addListener('mouseup',		mouseUp)
+	addListener('mousemove',	mouseMove)
+	addListener('touchstart',	onTouch)
+	addListener('touchmove',	onTouch)
+	addListener("touchend",		onTouch);
+	addListener("touchcancel",	onTouch);
+
 	return input;
-}
-
-class Camera {
-    constructor(canvas, width = 100.0, height = 100.0) {
-        this.objects = []
-        this.setSize(width, height)
-        this.worldMatrix = CreateUnitMatrix3()
-        this.projectionMatrix = CreateProjectionMatrix4(1.0, 1.0, 1.0, 2.0)
-        this.cameraPosition = CreateVector3(0.0, 0.0, 15.0)
-        this.position = CreateVector3()
-        this.canvas = canvas
-
-        Camera.instance = this
-    }
-
-    setSize(width, height) {
-        this.screenWidht = width;
-        this.screenHeight = height;
-        this.centerOffcet = CreateVector3(width * 0.5, height * 0.5)
-        this.screenScale = Math.min(width, height)
-    }
-
-    render () {
-		for (let i = 0; i < this.objects.length; i++) {
-			this.objects[i].prepareScene(this)
-		}
-		this.objects.sort(object3DDepthComparator)
-		for (let i = 0; i < this.objects.length; i++) {
-			this.objects[i].draw(this.canvas)
-		}
-    }
-
-    worldToScreenVector3 (point) {
-        let worldPoint = point
-        worldPoint = AddVector3(worldPoint, MultiplyVector3(this.position, -1.0))
-        worldPoint = MultiplyVector3ToMatrix3(worldPoint, this.worldMatrix)
-        worldPoint = AddVector3(worldPoint, this.cameraPosition)
-        worldPoint = MultiplyVector3ToMatrix4(worldPoint, this.projectionMatrix)
-        worldPoint = MultiplyVector3(worldPoint, this.screenScale)
-        return AddVector3(worldPoint, this.centerOffcet)
-    }
-
-    worldToScreenVector3WithOffcet (point, offcet) {
-        let worldPoint = point
-        worldPoint = AddVector3(worldPoint, MultiplyVector3(this.position, -1.0))
-        worldPoint = MultiplyVector3ToMatrix3(worldPoint, this.worldMatrix)
-        worldPoint = AddVector3(worldPoint, this.cameraPosition)
-        worldPoint = AddVector3(worldPoint, offcet)
-        worldPoint = MultiplyVector3ToMatrix4(worldPoint, this.projectionMatrix)
-        worldPoint = MultiplyVector3(worldPoint, this.screenScale)
-        return AddVector3(worldPoint, this.centerOffcet)
-    }
-}// 3d Dot class
-class Object3D {
-    constructor(positionVector3, radius = 0.5, color = '#FFEEEE') {
-		this.position = positionVector3
-		this.screenPosition = CreateVector3()
-		this.color = color
-		this.radiusPositionVector = CreateVector3(radius)
-		this.screenRadius = 10.0
-		this.enabled = true
-		Camera.instance.objects.push(this)
-	}
-
-	setRadius(radius) {
-		this.radiusPositionVector = CreateVector3(radius)
-	}
-	
-	prepareScene (camera) {
-		if (!this.enabled)
-			return
-		this.screenPosition = camera.worldToScreenVector3(this.position)
-		let screenRadiusPosition = camera.worldToScreenVector3WithOffcet(this.position, this.radiusPositionVector)
-		let screenRadiusVector = SubstractVector3(this.screenPosition, screenRadiusPosition)
-		this.screenRadius = Vector3Length(screenRadiusVector)
-	}
-
-	draw (canvas) {
-		if (!this.enabled)
-			return
-		canvas.fillStyle = this.color
-		canvas.beginPath()
-		canvas.arc(this.screenPosition[0], this.screenPosition[1], this.screenRadius, 0, 2.0 * Math.PI);
-		canvas.closePath()
-		canvas.fill()
-	}
-}
-// 3d Triangle class
-class Object3DTriangle {
-    constructor(a, b, c, color = '#FFEEEE', filled = true, ignoreBackface = true) {
-		this.points = [a, b, c]
-		this.screenPoints = [a, b, c]
-		this.position = FindMiddlePoint(this.points)
-		this.screenPosition = CreateVector3()
-		this.color = color
-		this.ignoreBackface = ignoreBackface
-		this.filled = filled
-		this.enabled = true
-		Camera.instance.objects.push(this)
-	}
-	
-	prepareScene (camera) {
-		if (!this.enabled)
-			return
-		this.screenPosition = camera.worldToScreenVector3(this.position)
-		for(let i = 0; i < this.screenPoints.length; i++) {
-			this.screenPoints[i] = camera.worldToScreenVector3(this.points[i])
-		}
-	}
-
-	draw (canvas) {
-		if (!this.enabled)
-			return
-		if (this.ignoreBackface) {
-			var dot = PointToLine(this.screenPoints[0], this.screenPoints[1], this.screenPoints[2])
-			if (dot > 0)
-				return
-		}
-		canvas.fillStyle = this.color
-		canvas.strokeStyle = this.color
-		canvas.beginPath()
-		let last = this.screenPoints[this.screenPoints.length - 1]
-		canvas.moveTo(last[0], last[1])
-		for(let i = 0; i < this.screenPoints.length; i++) {
-			canvas.lineTo(this.screenPoints[i][0], this.screenPoints[i][1]);
-		}
-		canvas.closePath()
-		if (this.filled)
-			canvas.fill()
-		canvas.stroke()
-	}
-}
-
-function object3DDepthComparator (objectA, objectB) {
-	if (objectA.screenPosition[2] < objectB.screenPosition[2])
-		return -1
-	if (objectA.screenPosition[2] > objectB.screenPosition[2])
-		return 1
-	return 0
 }class Level {
     constructor(id = 0) {
         this.setLevel(id)
@@ -673,9 +619,9 @@ function object3DDepthComparator (objectA, objectB) {
         this.snake = new Snake(this.navigationMesh)
         this.snake.setEnabled(false)
         this.apples = [
-            new Apple(CreateVector3(), rgbToHex(255, 0, 0)),
-            new Apple(CreateVector3(), rgbToHex(255, 0, 0)),
-            new Apple(CreateVector3(), rgbToHex(255, 0, 0))
+            new Apple(CreateVector3(), rgbToHex(51,255,51)),
+            new Apple(CreateVector3(), rgbToHex(51,255,51)),
+            new Apple(CreateVector3(), rgbToHex(51,255,51))
         ]
         this.rocks = []
         for(let i = 0; i < this.needRocks; i++) {
@@ -1014,54 +960,27 @@ function createNavigationCilynder(sides = 16, radius = 4.0, height = 7.0, naviga
     return navigationTriangles
 }
 
-function createCilynderOld(sides = 16, radius = 5.0, height = 10.0) {
-	let objects = []
+function createRotationBody(points, sides = 16) { // points - Vector3 list
+    let navigationTriangles = []
 	let radiusVectors = []
 	for (let i = 0; i <= sides; i++) {
 		let angle = 360.0 / sides * i
-		var sideVector = MultiplyVector3ToMatrix3(CreateVector3(radius, 0, 0), CreateMatrix3RotatedY(angle))
+		var sideVector = MultiplyVector3ToMatrix3(CreateVector3(radius + navigationRadius, 0, 0), CreateMatrix3RotatedY(angle))
 		radiusVectors.push(sideVector)
 	}
-	let centerUpPoint = CreateVector3(0, height * 0.5, 0)
-	let centerDownPoint = CreateVector3(0, -height * 0.5, 0)
+	let centerUpPoint = CreateVector3(0, height * 0.5 + navigationRadius, 0)
+    let centerDownPoint = CreateVector3(0, -height * 0.5 - navigationRadius, 0)
 	for (let i = 0; i < sides; i++) {
-		let color = '#FFFFFF'
-		if (i % 2 == 1)
-			color = '#666666'
 		let upStart = AddVector3(centerUpPoint, radiusVectors[i])
 		let upEnd = AddVector3(centerUpPoint, radiusVectors[i + 1])
 		let downStart = AddVector3(centerDownPoint, radiusVectors[i])
 		let downEnd = AddVector3(centerDownPoint, radiusVectors[i + 1])
-		objects.push(new Object3DTriangle(centerUpPoint, upStart, upEnd, color))
-		objects.push(new Object3DTriangle(centerDownPoint, downEnd, downStart, color))
-		objects.push(new Object3DTriangle(upStart, downEnd, upEnd, color))
-		objects.push(new Object3DTriangle(upStart, downStart, downEnd, color))
+		navigationTriangles.push([centerUpPoint, upStart, upEnd])
+        navigationTriangles.push([centerDownPoint, downEnd, downStart])
+        navigationTriangles.push([upStart, downEnd, upEnd])
+        navigationTriangles.push([upStart, downStart, downEnd])
     }
-    return objects
-}
-
-function createDotCube(size = 5) {
-    let objects = []
-    for (let i = -size; i <= size; i++) {
-        for (let j = -size; j <= size; j++) {
-            objects.push(createObject( i, j, size))
-            objects.push(createObject( i, j,-size))
-            objects.push(createObject( i, size, j))
-            objects.push(createObject( i,-size, j))
-            objects.push(createObject( size, i, j))
-            objects.push(createObject(-size, i, j))
-        }
-    }
-    return objects
-}
-
-function createObject(x, y, z) {
-    let position = CreateVector3(x, y, z)
-    var r = parseInt((x + 5) * 255 / 10)
-    var g = parseInt((y + 5) * 255 / 10)
-    var b = parseInt((z + 5) * 255 / 10)
-    let color = rgbToHex(r, g, b)
-    return new Object3D(position, 0.5, color)
+    return navigationTriangles
 }
 
 function rgbToHex(r, g, b, a = 255) {
@@ -1070,9 +989,513 @@ function rgbToHex(r, g, b, a = 255) {
         return hex.length == 1 ? "0" + hex : hex;
     }
     return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b) + componentToHex(a);
+}const minDt = 1/30
+let fps,
+    time = timestamp()
+
+let width = document.documentElement.clientWidth
+let height = document.documentElement.clientHeight
+let minSize = Math.min(width, height)
+const selectLevelState = 0
+const pauseState = 1
+const gameState = 3
+const startGameState = 4
+const winState = 5
+const loseState = 6
+let state = selectLevelState
+
+// init
+let input = Input()
+let canvasElement = document.getElementById('snake')
+let canvas = canvasElement.getContext('2d')
+let camera = new Camera(canvas)
+SetCanvasSize(width, height)
+let changeLevelAnim = 0
+let changeLevelDirection = 1.0
+let levelId = 0
+
+let currentMatrix = CreateUnitMatrix3()
+let rotationAxe = NormalizeVector3(CreateVector3(1.0, 1.0, 1.0))
+
+let level = new Level()
+
+let needShowDebugInfo = false
+let needShowFPSInfo = false
+
+function timestamp() {
+    return window.performance && window.performance.now ? window.performance.now() : new Date().getTime()
 }
-	
-class NavigationMesh {
+
+function render() {
+    // clear
+    canvas.fillStyle = '#000011'
+    canvas.fillRect ( 0, 0, width, height)
+    switch(state) {
+        default:
+        case selectLevelState:
+            renderSelectLevelState()
+            break
+        case pauseState:
+            renderPauseState()
+            break
+        case startGameState:
+            renderStartGameState()
+            break
+        case gameState:
+            renderGameState()
+            break
+        case winState:
+            renderWinState()
+            break
+        case loseState:
+            renderLoseState()
+            break
+    }
+    // debug
+    if (needShowFPSInfo) {
+        canvas.textAlign = "end";
+        canvas.fillText("FPS: " + Math.round(fps), width - 30, 50)
+    }
+}
+
+function renderSelectLevelState() {
+    camera.render()
+    // info
+    canvas.fillStyle = '#FFFFFF'
+    canvas.textAlign = "center"; // "start", "end", "center", "left", "right"
+    canvas.fillText("Level: " + levelId , width * 0.5, height * 0.25 - minSize * 0.17)
+    canvas.fillText("need apples: " + level.applesNeed , width * 0.5, height * 0.25 - minSize * 0.1)
+    canvas.fillText("rocks on level: " + level.needRocks , width * 0.5, height * 0.25 - minSize * 0.03)
+    //canvas.fillText("<< to select level >>", width * 0.5, height * 0.5 + minSize * 0.4)
+    // canvas.fillText("space to start", width * 0.5, height * 0.5 + minSize * 0.45)
+    drawStartButton(width * 0.5, height - minSize * 0.1, minSize * 0.1)
+    drawArrowLeft(minSize * 0.1, height - minSize * 0.1, minSize * 0.1)
+    drawArrowRight(width - minSize * 0.1, height - minSize * 0.1, minSize * 0.1)
+}
+
+function drawStartButton(x, y, size) {
+    canvas.fillStyle = '#FFFFFF33'
+    canvas.strokeStyle = '#FFFFFF11'
+    canvas.beginPath()
+    canvas.arc(x, y, size * 0.60, 0.0, Math.PI * 2.0)
+    canvas.arc(x, y, size * 0.46, 0.0, Math.PI * 2.0, true)
+    canvas.closePath()
+    canvas.fill()
+    canvas.beginPath()
+    canvas.arc(x, y, size * 0.60, 0.0, Math.PI * 2.0)
+    canvas.closePath()
+    canvas.stroke()
+    canvas.beginPath()
+    canvas.moveTo(x + size * 0.36, y)
+    canvas.lineTo(x - size * 0.24, y + size * 0.28)
+    canvas.lineTo(x - size * 0.24, y - size * 0.28)
+    canvas.closePath()
+    canvas.fill()
+    canvas.stroke()
+}
+
+function drawArrowRight(x, y, size) {
+    canvas.fillStyle = '#FFFFFF33'
+    canvas.strokeStyle = '#FFFFFF11'
+    canvas.beginPath()
+    canvas.moveTo(x + size * 0.5, y)
+    canvas.lineTo(x, y + size * 0.5)
+    canvas.lineTo(x - size * 0.5, y + size * 0.5)
+    canvas.lineTo(x, y)
+    canvas.lineTo(x - size * 0.5, y - size * 0.5)
+    canvas.lineTo(x, y - size * 0.5)
+    canvas.closePath()
+    canvas.fill()
+    canvas.stroke()
+}
+
+function drawArrowLeft(x, y, size) {
+    canvas.fillStyle = '#FFFFFF33'
+    canvas.strokeStyle = '#FFFFFF11'
+    canvas.beginPath()
+    canvas.moveTo(x - size * 0.5, y)
+    canvas.lineTo(x, y + size * 0.5)
+    canvas.lineTo(x + size * 0.5, y + size * 0.5)
+    canvas.lineTo(x, y)
+    canvas.lineTo(x + size * 0.5, y - size * 0.5)
+    canvas.lineTo(x, y - size * 0.5)
+    canvas.closePath()
+    canvas.fill()
+    canvas.stroke()
+}
+
+function renderWinState() {
+    camera.render()
+    // info
+    canvas.fillStyle = '#FFFFFF'
+    canvas.textAlign = "center"; // "start", "end", "center", "left", "right"
+    canvas.fillText("YOU WIN!", width * 0.5, height * 0.1)
+    canvas.fillText("space to next level", width * 0.5, height * 0.85)
+    canvas.fillText("esc to level selection", width * 0.5, height * 0.95)
+}
+
+function renderLoseState() {
+    camera.render()
+    // info
+    canvas.fillStyle = '#FFFFFF'
+    canvas.textAlign = "center"; // "start", "end", "center", "left", "right"
+    canvas.fillText("YOU LOSE!", width * 0.5, height * 0.1)
+    canvas.fillText("space to retry", width * 0.5, height * 0.85)
+    canvas.fillText("esc to level selection", width * 0.5, height * 0.95)
+}
+
+function renderPauseState() {
+    camera.render()
+    // info
+    canvas.fillStyle = '#FFFFFF'  // white
+    canvas.textAlign = "center"; // "start", "end", "center", "left", "right"
+    canvas.fillText("PAUSE ", width * 0.5, height * 0.5 - minSize * 0.4)
+    canvas.fillText("Q to quit ", width * 0.5, height * 0.5 + minSize * 0.4)
+    canvas.fillText("Esc to continue ", width * 0.5, height * 0.5 + minSize * 0.45)
+}
+
+function renderStartGameState() {
+    camera.render()
+    let alpha = parseInt((Math.max(0.0, 1.0 - Math.abs(changeLevelAnim * 3.0 - 1.5))) * 255.0)
+    canvas.fillStyle = rgbToHex(0, 0, 0, alpha)
+    canvas.fillRect ( 0, 0, width, height)
+}
+
+function renderGameState() {
+    camera.render()
+    // info
+    canvas.fillStyle = '#FFFFFF'  // white
+    canvas.textAlign = "start"; // "end", "center", "left", "right"
+    canvas.textBaseline = "middle"; // textBaseline = "top" || "hanging" || "middle" || "alphabetic" || "ideographic" || "bottom";
+    canvas.fillText(level.applesCount + "/" + level.applesNeed, minSize * 0.15, minSize * 0.1)
+    drawApple(minSize * 0.1, minSize * 0.1, minSize * 0.046)
+    for(let i = 0; i < level.livesCount; i++) {
+        drawLiveHeart(width * 0.5 + (i - 1) * minSize * 0.05, height * 0.95, minSize * 0.05)
+    }
+    drawArrowLeft(minSize * 0.1, height - minSize * 0.1, minSize * 0.1)
+    drawArrowRight(width - minSize * 0.1, height - minSize * 0.1, minSize * 0.1)
+}
+
+function drawLiveHeart(x, y, size = 10.0) {
+    canvas.fillStyle = '#FF0000'
+    canvas.beginPath()
+    canvas.moveTo(x, y + size * 0.5);
+    canvas.arc(x - size * 0.175, y, size * 0.25, Math.PI * 0.75, Math.PI * 1.75);
+    canvas.arc(x + size * 0.175, y, size * 0.25, Math.PI * 1.25, Math.PI * 2.25);
+    canvas.closePath()
+    canvas.fill()
+}
+
+function drawApple(x, y, size = 10.0) {
+    canvas.fillStyle = '#33FF33'
+    canvas.beginPath()
+    canvas.arc(x, y, size * 0.5, 0.0, Math.PI * 2.0);
+    canvas.closePath()
+    canvas.fill()
+}
+
+function update(dt) {
+    switch(state) {
+        default:
+        case selectLevelState:
+            updateSelectLevelState(dt)
+            break
+        case startGameState:
+            updateStartGameState(dt)
+            break
+        case pauseState:
+            updatePauseState(dt)
+            break
+        case gameState:
+            updateGameState(dt)
+            break
+        case winState:
+            updateWinState(dt)
+            break
+        case loseState:
+            updateLoseState(dt)
+            break
+    }
+    if (input.key[115]) { // F4
+        input.key[115] = false
+        needShowFPSInfo = !needShowFPSInfo
+        console.log(Camera.instance.objects.length)
+    }
+}
+
+function updateSelectLevelState(dt) {
+    if (changeLevelAnim > 0) {
+        const changeSpeed = 3.0
+        changeLevelAnim -= changeSpeed * dt
+        if (changeLevelAnim < 0)
+            changeLevelAnim = 0
+        let anim = (changeLevelAnim - 0.5) * 2.0
+        if (anim > 0) {
+            camera.cameraPosition = CreateVector3((1 - anim * anim) * 30.0 * changeLevelDirection, 0.0, 20.0)
+        } else {
+            if (level.id != levelId) {
+                level.setLevel(levelId)
+            }
+            camera.cameraPosition = CreateVector3((-1 + anim * anim) * 30.0 * changeLevelDirection, 0.0, 20.0)
+        }
+        return
+    }
+    if (input.key[32]) { // space
+        input.key[32] = false
+        setState(startGameState)
+    }
+    if (input.key[65] || input.key[37]) { // LEFT | A
+        if (levelId > 0) {
+            changeLevelAnim = 1.0
+            changeLevelDirection = -1.0
+            levelId -= 1
+        }
+    }
+    if (input.key[68] || input.key[39]) { // RIGHT | D
+        changeLevelAnim = 1.0
+        changeLevelDirection = 1.0
+        levelId += 1
+    }
+    if (input.isTouchRect(0, height * 0.5, width * 0.3, height)) {
+        if (levelId > 0) {
+            changeLevelAnim = 1.0
+            changeLevelDirection = -1.0
+            levelId -= 1
+        }
+    }
+    if (input.isTouchRect(width * 0.7, height * 0.5, width, height)) {
+        changeLevelAnim = 1.0
+        changeLevelDirection = 1.0
+        levelId += 1
+    }
+    if (input.isTouchRect(width * 0.4, height * 0.5, width * 0.6, height)) {
+        setState(startGameState)
+    }
+    level.update(dt)
+    currentMatrix = MultiplyMatrix3(currentMatrix, CreateRotationMatrix3(rotationAxe, 20.0 * dt))
+    rotationAxe = NormalizeVector3(
+        CreateVector3(
+            rotationAxe[0] * 100.0 + (Math.random() * 2.0 - 1),
+            rotationAxe[1] * 100.0 + (Math.random() * 2.0 - 1),
+            rotationAxe[2] * 100.0 + (Math.random() * 2.0 - 1)))
+    camera.worldMatrix = currentMatrix
+    camera.position = MultiplyVector3(camera.position, 1.0 - 1.0 * dt)
+
+    if (input.key[113]) { // F2
+        input.key[113] = false
+        needShowDebugInfo = !needShowDebugInfo
+        level.showDebugInfo(needShowDebugInfo)
+    }
+}
+
+function updateWinState(dt) {
+    if (changeLevelAnim > 0) {
+        const changeSpeed = 3.0
+        changeLevelAnim -= changeSpeed * dt
+        if (changeLevelAnim < 0) {
+            changeLevelAnim = 0
+        }
+        let anim = (changeLevelAnim - 0.5) * 2.0
+        if (anim > 0) {
+            camera.cameraPosition = CreateVector3((1 - anim * anim) * 30.0 * changeLevelDirection, 0.0, 15.0)
+        } else {
+            if (level.id != levelId) {
+                level.setLevel(levelId)
+            }
+            camera.cameraPosition = CreateVector3((-1 + anim * anim) * 30.0 * changeLevelDirection, 0.0, 15.0)
+        }
+        return
+    }
+    if (level.id == levelId) {
+        setState(startGameState)
+        return
+    }
+    if (input.key[27]) { // esc
+        input.key[27] = false
+        levelId -= 1
+        setState(selectLevelState)
+    }
+    if (input.key[32]) { // space
+        input.key[32] = false
+        changeLevelAnim = 1.0
+        changeLevelDirection = 1.0
+    }
+    if (input.isTouchRect(0, 0, width, height)) {
+        changeLevelAnim = 1.0
+        changeLevelDirection = 1.0
+    }
+    level.update(dt)
+}
+
+function updateStartGameState(dt) {
+    if (changeLevelAnim > 0) {
+        const changeSpeed = 1.0
+        let next = changeLevelAnim - changeSpeed * dt
+        if (next <= 0.5 && changeLevelAnim > 0.5) {
+            level.setLevel(levelId)
+        }
+        changeLevelAnim = next
+        if (changeLevelAnim < 0)
+            changeLevelAnim = 0
+        if (changeLevelAnim < 0.5) {
+            level.update(dt)
+            camera.position = level.snake.position
+            let angles = getCameraRotation(level.snake.position)
+            camera.worldMatrix = MultiplyMatrix3(CreateRotationMatrix3(CreateVector3(1.0), angles[0]), CreateRotationMatrix3(CreateVector3(0.0, 1.0), angles[1]))
+        }
+    } else {
+        setState(gameState)
+    }
+}
+
+function updateLoseState(dt) {
+    if (input.key[27]) { // esc
+        input.key[27] = false
+        setState(selectLevelState)
+    }
+    if (input.key[32]) { // space
+        input.key[32] = false
+        setState(startGameState)
+    }
+    if (input.isTouchRect(0, 0, width, height)) {
+        setState(selectLevelState)
+    }
+    level.update(dt)
+}
+
+function updatePauseState(dt) {
+    if (input.key[27]) { // esc
+        input.key[27] = false
+        setState(gameState)
+    }
+    if (input.key[81]) { // Q
+        input.key[81] = false
+        setState(selectLevelState)
+    }
+}
+
+function updateGameState(dt) {
+    // control
+    // UP = 38
+    // DOWN = 40
+    // LEFT = 37
+    // RIGHT = 39
+    // W = 87
+    // S = 83
+    // A = 65
+    // D = 68
+    // space = 32
+    if (input.key[27]) { // esc
+        input.key[27] = false
+        setState(pauseState)
+    }
+    let rotateAngle = 0
+    if (input.key[65] || input.key[37]) { // LEFT | A
+        rotateAngle = 1.0
+    }
+    if (input.key[68] || input.key[39]) { // RIGHT | D
+        rotateAngle = -1.0
+    }
+    if (input.isTouchRect(0, 0, width * 0.5, height)) {
+        rotateAngle = 1.0 // left
+    }
+    if (input.isTouchRect(width * 0.5, 0, width, height)) {
+        rotateAngle = -1.0 // right
+    }
+    level.snake.rotate(rotateAngle)
+    level.snake.update(dt)
+
+    level.update(dt)
+
+    camera.position = level.snake.position
+    let angles = getCameraRotation(level.snake.position)
+    camera.worldMatrix = MultiplyMatrix3(CreateRotationMatrix3(CreateVector3(1.0), angles[0]), CreateRotationMatrix3(CreateVector3(0.0, 1.0), angles[1]))
+    if (input.key[113]) { // F2
+        input.key[113] = false
+        needShowDebugInfo = !needShowDebugInfo
+        level.showDebugInfo(needShowDebugInfo)
+    }
+    if (level.applesNeed <= level.applesCount) {
+        setState(winState)
+    }
+    if (level.livesCount <= 0) {
+        setState(loseState)
+    }
+}
+
+function getCameraRotation(position) {
+    let cameraVector = NormalizeVector3(position)
+    let XZVector = NormalizeVector2([cameraVector[0], cameraVector[2]])
+    // let YNVector = NormalizeVector2([cameraVector[1], Math.sqrt(cameraVector[0], cameraVector[2])])
+    let baseAngle = Math.acos(XZVector[0]) / Math.PI * 180.0
+    let upAngle = Math.acos(cameraVector[1]) / Math.PI * 180.0 - 90.0
+    if (cameraVector[2] > 0) {
+        baseAngle += 90.0
+    } else {
+        baseAngle = 90.0 - baseAngle
+    }
+    return [upAngle, baseAngle]
+}
+
+function setState(newState) {
+    state = newState
+    switch(state) {
+        default:
+        case selectLevelState:
+            currentMatrix = camera.worldMatrix
+            level.hideLevelDetails()
+            break
+        case startGameState:
+            changeLevelAnim = 1.0
+            break
+        case pauseState:
+            break
+        case gameState:
+            for(let i = 0; i < 30; i++) {
+                level.snake.update(1.0/30.0)
+            }
+            level.start()
+            break
+        case winState:
+            level.hideLevelDetails()
+            levelId += 1
+            break
+        case loseState:
+            level.hideLevelDetails()
+            break
+    }
+}
+
+function frame() {
+    let now = timestamp()
+    let delta = (now - time) / 1000.0
+    fps = 1.0 / delta
+    if (delta > minDt) {
+        delta = minDt
+    }
+    update(delta)
+    render()
+    time = now
+    requestAnimationFrame(frame)
+    if (width != document.documentElement.clientWidth || height != document.documentElement.clientHeight) {
+        width = document.documentElement.clientWidth
+        height = document.documentElement.clientHeight
+        minSize = Math.min(width, height)
+        SetCanvasSize(width, height)
+    }
+}
+requestAnimationFrame(frame)
+
+function SetCanvasSize(width, height) {
+    canvasElement.width = width
+    canvasElement.height = height
+    let fontSize = 32.0
+    if (height > width) {
+        fontSize *= width / height
+    }
+    canvas.font = parseInt(fontSize) + "pt Arial"
+    camera.setSize(width, height)
+}class NavigationMesh {
     constructor(navigationNodes = [], startNodeId = 0) {
         this.nodes = navigationNodes
         this.currentNode = this.nodes[startNodeId]
@@ -1151,9 +1574,7 @@ class NavigationMesh {
     rotateHeroDirection(angle = 0.0) {
         this.heroVector = NormalizeVector3(MultiplyVector3ToMatrix3(this.heroVector, CreateRotationMatrix3(this.currentNode.unitNormal, angle)))
     }
-}
-
-	class NavigationNode {
+}class NavigationNode {
     // https://mathinsight.org/distance_point_plane
     // plane formula
     // Ax + By + Cz + D = 0
@@ -1243,38 +1664,94 @@ class NavigationMesh {
         let distance = this.GetDistanceToPlane(point)
         return AddVector3(point, MultiplyVector3(this.unitNormal, -distance))
     }
-}
-	
-	class Apple {
-    constructor(positionVector3, color, radius = 0.4, animSpeed = 6.0) {
+}// 3d Dot class
+class Object3D {
+    constructor(positionVector3, radius = 0.5, color = '#FFEEEE') {
 		this.position = positionVector3
-		this.object3d = new Object3D(positionVector3, 0.0, color)
-		this.radius = radius
-		this.anim = 0.0
-        this.animSpeed = animSpeed
-    }
+		this.screenPosition = CreateVector3()
+		this.color = color
+		this.radiusPositionVector = CreateVector3(radius)
+		this.screenRadius = 10.0
+		this.enabled = true
+		Camera.instance.objects.push(this)
+	}
 
-    remove (position) {
-        this.position = position
-        this.anim = -Math.abs(this.anim)
-    }
+	setRadius(radius) {
+		this.radiusPositionVector = CreateVector3(radius)
+	}
+	
+	prepareScene (camera) {
+		if (!this.enabled)
+			return
+		this.screenPosition = camera.worldToScreenVector3(this.position)
+		let screenRadiusPosition = camera.worldToScreenVector3WithOffcet(this.position, this.radiusPositionVector)
+		let screenRadiusVector = SubstractVector3(this.screenPosition, screenRadiusPosition)
+		this.screenRadius = Vector3Length(screenRadiusVector)
+	}
 
-	update (dt) {
-        if (this.anim < 1.0) {
-            let newValue = this.anim + this.animSpeed * dt
-            if (newValue > 1.0) {
-                newValue = 1.0
-            } else {
-                if (this.anim < 0 && newValue > 0) {
-                    this.object3d.position = this.position
-                }
-            }
-            this.anim = newValue
-            this.object3d.setRadius(this.radius * Math.abs(this.anim))
-        }
+	draw (canvas) {
+		if (!this.enabled)
+			return
+		canvas.fillStyle = this.color
+		canvas.beginPath()
+		canvas.arc(this.screenPosition[0], this.screenPosition[1], this.screenRadius, 0, 2.0 * Math.PI);
+		canvas.closePath()
+		canvas.fill()
 	}
 }
-	class Snake {
+// 3d Triangle class
+class Object3DTriangle {
+    constructor(a, b, c, color = '#FFEEEE', filled = true, ignoreBackface = true) {
+		this.points = [a, b, c]
+		this.screenPoints = [a, b, c]
+		this.position = FindMiddlePoint(this.points)
+		this.screenPosition = CreateVector3()
+		this.color = color
+		this.ignoreBackface = ignoreBackface
+		this.filled = filled
+		this.enabled = true
+		Camera.instance.objects.push(this)
+	}
+	
+	prepareScene (camera) {
+		if (!this.enabled)
+			return
+		this.screenPosition = camera.worldToScreenVector3(this.position)
+		for(let i = 0; i < this.screenPoints.length; i++) {
+			this.screenPoints[i] = camera.worldToScreenVector3(this.points[i])
+		}
+	}
+
+	draw (canvas) {
+		if (!this.enabled)
+			return
+		if (this.ignoreBackface) {
+			var dot = PointToLine(this.screenPoints[0], this.screenPoints[1], this.screenPoints[2])
+			if (dot > 0)
+				return
+		}
+		canvas.fillStyle = this.color
+		canvas.strokeStyle = this.color
+		canvas.beginPath()
+		let last = this.screenPoints[this.screenPoints.length - 1]
+		canvas.moveTo(last[0], last[1])
+		for(let i = 0; i < this.screenPoints.length; i++) {
+			canvas.lineTo(this.screenPoints[i][0], this.screenPoints[i][1]);
+		}
+		canvas.closePath()
+		if (this.filled)
+			canvas.fill()
+		canvas.stroke()
+	}
+}
+
+function object3DDepthComparator (objectA, objectB) {
+	if (objectA.screenPosition[2] < objectB.screenPosition[2])
+		return -1
+	if (objectA.screenPosition[2] > objectB.screenPosition[2])
+		return 1
+	return 0
+}class Snake {
     constructor(navigationMesh) {
         this.navigationMesh = navigationMesh
         this.position = navigationMesh.heroPosition
@@ -1335,422 +1812,5 @@ class NavigationMesh {
         }
 	}
 }
-	
-	
-	
-	const minDt = 1/30
-	let fps,
-		time = timestamp()
-
-	let width = document.documentElement.clientWidth
-	let height = document.documentElement.clientHeight
-	let minSize = Math.min(width, height)
-	const selectLevelState = 0
-	const pauseState = 1
-	const gameState = 3
-	const startGameState = 4
-	const winState = 5
-	const loseState = 6
-	let state = selectLevelState
-	
-	// init
-	let input = Input()
-	let canvasElement = document.getElementById('snake')
-	let canvas = canvasElement.getContext('2d')
-	let camera = new Camera(canvas)
-	SetCanvasSize(width, height)
-	let changeLevelAnim = 0
-	let changeLevelDirection = 1.0
-	let levelId = 0
-
-	let currentMatrix = CreateUnitMatrix3()
-	let rotationAxe = NormalizeVector3(CreateVector3(1.0, 1.0, 1.0))
-
-	let level = new Level()
-
-	let needShowDebugInfo = false
-	let needShowFPSInfo = false
-
-	function timestamp() {
-		return window.performance && window.performance.now ? window.performance.now() : new Date().getTime()
-	}
-
-	function render() {
-		// clear
-		canvas.fillStyle = '#000011'
-		canvas.font = "16pt Arial"
-		canvas.fillRect ( 0, 0, width, height)
-		switch(state) {
-			default:
-			case selectLevelState:
-				renderSelectLevelState()
-				break
-			case pauseState:
-				renderPauseState()
-				break
-			case startGameState:
-				renderStartGameState()
-				break
-			case gameState:
-				renderGameState()
-				break
-			case winState:
-				renderWinState()
-				break
-			case loseState:
-				renderLoseState()
-				break
-		}
-		// debug
-		if (needShowFPSInfo) {
-			canvas.fillText("FPS:", width - 120, 50)
-			canvas.textAlign = "end";
-			canvas.fillText(parseInt(fps), width - 30, 50)
-		}
-		let touches = ""
-		canvas.textAlign = "start";
-		for(let i = 0; i < input.touches.length; i++) {
-			touches += input.touches[i] + "\n" 
-		}
-		touches += input.mousePosition + "\n"
-		canvas.fillText("touches:\n" + touches, 10, 30)
-	}
-
-	function renderSelectLevelState() {
-		camera.render()
-		// info
-		canvas.fillStyle = '#FFFFFF'
-		canvas.textAlign = "center"; // "start", "end", "center", "left", "right"
-		canvas.fillText("Level: " + levelId , width * 0.5, height * 0.5 - minSize * 0.46)
-		canvas.fillText("need apples: " + level.applesNeed , width * 0.5, height * 0.5 - minSize * 0.42)
-		canvas.fillText("rocks on level: " + level.needRocks , width * 0.5, height * 0.5 - minSize * 0.38)
-		canvas.fillText("<< to select level >>", width * 0.5, height * 0.5 + minSize * 0.4)
-		canvas.fillText("space to start", width * 0.5, height * 0.5 + minSize * 0.45)
-	}
-
-	function renderWinState() {
-		camera.render()
-		// info
-		canvas.fillStyle = '#FFFFFF'
-		canvas.textAlign = "center"; // "start", "end", "center", "left", "right"
-		canvas.fillText("YOU WIN!", width * 0.5, height * 0.5 - minSize * 0.4)
-		canvas.fillText("space to next level", width * 0.5, height * 0.5 + minSize * 0.4)
-		canvas.fillText("esc to level selection", width * 0.5, height * 0.5 + minSize * 0.45)
-	}
-
-	function renderLoseState() {
-		camera.render()
-		// info
-		canvas.fillStyle = '#FFFFFF'
-		canvas.textAlign = "center"; // "start", "end", "center", "left", "right"
-		canvas.fillText("YOU LOSE!", width * 0.5, height * 0.5 - minSize * 0.4)
-		canvas.fillText("space to retry", width * 0.5, height * 0.5 + minSize * 0.4)
-		canvas.fillText("esc to level selection", width * 0.5, height * 0.5 + minSize * 0.45)
-	}
-
-	function renderPauseState() {
-		camera.render()
-		// info
-		canvas.fillStyle = '#FFFFFF'  // white
-		canvas.textAlign = "center"; // "start", "end", "center", "left", "right"
-		canvas.fillText("PAUSE ", width * 0.5, height * 0.5 - minSize * 0.4)
-		canvas.fillText("Q to quit ", width * 0.5, height * 0.5 + minSize * 0.4)
-		canvas.fillText("Esc to continue ", width * 0.5, height * 0.5 + minSize * 0.45)
-	}
-
-	function renderStartGameState() {
-		camera.render()
-		let alpha = parseInt((Math.max(0.0, 1.0 - Math.abs(changeLevelAnim * 3.0 - 1.5))) * 255.0)
-		canvas.fillStyle = rgbToHex(0, 0, 0, alpha)
-		canvas.fillRect ( 0, 0, width, height)
-	}
-
-	function renderGameState() {
-		camera.render()
-		// info
-		canvas.fillStyle = '#FFFFFF'  // white
-		canvas.textAlign = "start"; // "end", "center", "left", "right"
-		canvas.fillText("Apples: " + level.applesCount + "/" + level.applesNeed, width * 0.5 - minSize * 0.5, height * 0.5 - minSize * 0.45)
-		canvas.fillText("lives: " + level.livesCount, width * 0.5 - minSize * 0.5, height * 0.5 - minSize * 0.4)
-	}
-
-	function update(dt) {
-		switch(state) {
-			default:
-			case selectLevelState:
-				updateSelectLevelState(dt)
-				break
-			case startGameState:
-				updateStartGameState(dt)
-				break
-			case pauseState:
-				updatePauseState(dt)
-				break
-			case gameState:
-				updateGameState(dt)
-				break
-			case winState:
-				updateWinState(dt)
-				break
-			case loseState:
-				updateLoseState(dt)
-				break
-		}
-		if (input.key[115]) { // F4
-			input.key[115] = false
-			needShowFPSInfo = !needShowFPSInfo
-			console.log(Camera.instance.objects.length)
-		}
-	}
-
-	function updateSelectLevelState(dt) {
-		if (changeLevelAnim > 0) {
-			const changeSpeed = 3.0
-			changeLevelAnim -= changeSpeed * dt
-			if (changeLevelAnim < 0)
-				changeLevelAnim = 0
-			let anim = (changeLevelAnim - 0.5) * 2.0
-			if (anim > 0) {
-				camera.cameraPosition = CreateVector3((1 - anim * anim) * 30.0 * changeLevelDirection, 0.0, 15.0)
-			} else {
-				if (level.id != levelId) {
-					level.setLevel(levelId)
-				}
-				camera.cameraPosition = CreateVector3((-1 + anim * anim) * 30.0 * changeLevelDirection, 0.0, 15.0)
-			}
-			return
-		}
-		if (input.key[32]) { // space
-			input.key[32] = false
-			setState(startGameState)
-		}
-		if (input.key[65] || input.key[37]) { // LEFT | A
-			if (levelId > 0) {
-				changeLevelAnim = 1.0
-				changeLevelDirection = -1.0
-				levelId -= 1
-			}
-		}
-		if (input.key[68] || input.key[39]) { // RIGHT | D
-			changeLevelAnim = 1.0
-			changeLevelDirection = 1.0
-			levelId += 1
-		}
-		level.update(dt)
-		currentMatrix = MultiplyMatrix3(currentMatrix, CreateRotationMatrix3(rotationAxe, 20.0 * dt))
-		rotationAxe = NormalizeVector3(
-			CreateVector3(
-				rotationAxe[0] * 100.0 + (Math.random() * 2.0 - 1),
-				rotationAxe[1] * 100.0 + (Math.random() * 2.0 - 1),
-				rotationAxe[2] * 100.0 + (Math.random() * 2.0 - 1)))
-		camera.worldMatrix = currentMatrix
-		camera.position = MultiplyVector3(camera.position, 1.0 - 1.0 * dt)
-
-		if (input.key[113]) { // F2
-			input.key[113] = false
-			needShowDebugInfo = !needShowDebugInfo
-			level.showDebugInfo(needShowDebugInfo)
-		}
-	}
-
-	function updateWinState(dt) {
-		if (changeLevelAnim > 0) {
-			const changeSpeed = 3.0
-			changeLevelAnim -= changeSpeed * dt
-			if (changeLevelAnim < 0) {
-				changeLevelAnim = 0
-			}
-			let anim = (changeLevelAnim - 0.5) * 2.0
-			if (anim > 0) {
-				camera.cameraPosition = CreateVector3((1 - anim * anim) * 30.0 * changeLevelDirection, 0.0, 15.0)
-			} else {
-				if (level.id != levelId) {
-					level.setLevel(levelId)
-				}
-				camera.cameraPosition = CreateVector3((-1 + anim * anim) * 30.0 * changeLevelDirection, 0.0, 15.0)
-			}
-			return
-		}
-		if (level.id == levelId) {
-			setState(startGameState)
-			return
-		}
-		if (input.key[27]) { // esc
-			input.key[27] = false
-			levelId -= 1
-			setState(selectLevelState)
-		}
-		if (input.key[32]) { // space
-			input.key[32] = false
-			changeLevelAnim = 1.0
-			changeLevelDirection = 1.0
-		}
-		level.update(dt)
-	}
-
-	function updateStartGameState(dt) {
-		if (changeLevelAnim > 0) {
-			const changeSpeed = 1.0
-			let next = changeLevelAnim - changeSpeed * dt
-			if (next <= 0.5 && changeLevelAnim > 0.5) {
-				level.setLevel(levelId)
-			}
-			changeLevelAnim = next
-			if (changeLevelAnim < 0)
-				changeLevelAnim = 0
-			if (changeLevelAnim < 0.5) {
-				level.update(dt)
-				camera.position = level.snake.position
-				let angles = getCameraRotation(level.snake.position)
-				camera.worldMatrix = MultiplyMatrix3(CreateRotationMatrix3(CreateVector3(1.0), angles[0]), CreateRotationMatrix3(CreateVector3(0.0, 1.0), angles[1]))
-			}
-		} else {
-			setState(gameState)
-		}
-	}
-
-	function updateLoseState(dt) {
-		if (input.key[27]) { // esc
-			input.key[27] = false
-			setState(selectLevelState)
-		}
-		if (input.key[32]) { // space
-			input.key[32] = false
-			setState(startGameState)
-		}
-		level.update(dt)
-	}
-
-	function updatePauseState(dt) {
-		if (input.key[27]) { // esc
-			input.key[27] = false
-			setState(gameState)
-		}
-		if (input.key[81]) { // Q
-			input.key[81] = false
-			setState(selectLevelState)
-		}
-	}
-
-	function updateGameState(dt) {
-		// control
-		// UP = 38
-		// DOWN = 40
-		// LEFT = 37
-		// RIGHT = 39
-		// W = 87
-		// S = 83
-		// A = 65
-		// D = 68
-		// space = 32
-		if (input.key[27]) { // esc
-			input.key[27] = false
-			setState(pauseState)
-		}
-		let rotateAngle = 0
-		if (input.key[65] || input.key[37]) { // LEFT | A
-			rotateAngle = 1.0
-		}
-		if (input.key[68] || input.key[39]) { // RIGHT | D
-			rotateAngle = -1.0
-		}
-		if (input.mouseLeft) {
-			if (inRect(input.mousePosition[0], input.mousePosition[1], 0.0, height * 0.5, width * 0.3, height * 1.0)) {
-				rotateAngle = 1.0 // left
-			}
-			if (inRect(input.mousePosition[0], input.mousePosition[1], width * 0.7, height * 0.5, width * 1.0, height * 1.0)) {
-				rotateAngle = -1.0 // right
-			}
-		}
-		level.snake.rotate(rotateAngle)
-		level.snake.update(dt)
-
-		level.update(dt)
-
-		camera.position = level.snake.position
-		let angles = getCameraRotation(level.snake.position)
-		camera.worldMatrix = MultiplyMatrix3(CreateRotationMatrix3(CreateVector3(1.0), angles[0]), CreateRotationMatrix3(CreateVector3(0.0, 1.0), angles[1]))
-		if (input.key[113]) { // F2
-			input.key[113] = false
-			needShowDebugInfo = !needShowDebugInfo
-			level.showDebugInfo(needShowDebugInfo)
-		}
-		if (level.applesNeed <= level.applesCount) {
-			setState(winState)
-		}
-		if (level.livesCount <= 0) {
-			setState(loseState)
-		}
-	}
-
-	function getCameraRotation(position) {
-		let cameraVector = NormalizeVector3(position)
-		let XZVector = NormalizeVector2([cameraVector[0], cameraVector[2]])
-		let YNVector = NormalizeVector2([cameraVector[1], Math.sqrt(cameraVector[0], cameraVector[2])])
-		let baseAngle = Math.acos(XZVector[0]) / Math.PI * 180.0
-		let upAngle = Math.acos(cameraVector[1]) / Math.PI * 180.0 - 90.0
-		if (cameraVector[2] > 0) {
-		 	baseAngle += 90.0
-		} else {
-		 	baseAngle = 90.0 - baseAngle
-		}
-		return [upAngle, baseAngle]
-	}
-	
-	function setState(newState) {
-		state = newState
-		switch(state) {
-			default:
-			case selectLevelState:
-				currentMatrix = camera.worldMatrix
-				level.hideLevelDetails()
-				break
-			case startGameState:
-				changeLevelAnim = 1.0
-				break
-			case pauseState:
-				break
-			case gameState:
-				for(let i = 0; i < 30; i++) {
-					level.snake.update(1.0/30.0)
-				}
-				level.start()
-				break
-			case winState:
-				level.hideLevelDetails()
-				levelId += 1
-				break
-			case loseState:
-				level.hideLevelDetails()
-				break
-		}
-	}
-
-	function frame() {
-		let now = timestamp()
-		let delta = (now - time) / 1000.0
-		fps = 1.0 / delta
-		if (delta > minDt) {
-			delta = minDt
-		}
-		update(delta)
-		render()
-		time = now
-		requestAnimationFrame(frame)
-		if (width != document.documentElement.clientWidth || height != document.documentElement.clientHeight) {
-			width = document.documentElement.clientWidth
-			height = document.documentElement.clientHeight
-			minSize = Math.min(width, height)
-			SetCanvasSize(width, height)
-		}
-	}
-	requestAnimationFrame(frame)
-
-	function SetCanvasSize(width, height) {
-		canvasElement.width = width
-		canvasElement.height = height
-		camera.setSize(width, height)
-	}
-
 	</script>
 </html>

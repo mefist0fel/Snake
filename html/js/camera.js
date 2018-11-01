@@ -1,3 +1,4 @@
+// 3d camera controller
 class Camera {
     constructor(canvas, width = 100.0, height = 100.0) {
         this.objects = []

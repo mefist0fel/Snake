@@ -1,3 +1,4 @@
+// Level generation class
 class Level {
     constructor(id = 0) {
         this.setLevel(id)

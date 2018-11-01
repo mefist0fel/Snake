@@ -1,3 +1,4 @@
+// Geometry functions
 const MAX_NUMBER = Number.MAX_VALUE
 const MIN_NUMBER = Number.MIN_VALUE
 const PI = Math.PI

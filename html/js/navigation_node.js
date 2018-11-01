@@ -1,3 +1,4 @@
+// nav node - for nav class
 class NavigationNode {
     // https://mathinsight.org/distance_point_plane
     // plane formula

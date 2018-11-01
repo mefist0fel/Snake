@@ -1,3 +1,4 @@
+// snake logic class
 class Snake {
     constructor(navigationMesh) {
         this.navigationMesh = navigationMesh

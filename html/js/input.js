@@ -1,3 +1,4 @@
+// Base keys, mouse, touches input
 function Input() {
 	//  KEY KODES
 	//	BACKSPACE: 8,

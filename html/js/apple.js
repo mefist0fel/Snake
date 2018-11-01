@@ -1,3 +1,4 @@
+// Apple logical controller
 class Apple {
     constructor(positionVector3, color, radius = 0.4, animSpeed = 6.0) {
 		this.position = positionVector3

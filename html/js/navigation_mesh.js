@@ -1,3 +1,4 @@
+// Navigation mesh class - to move point throw navigation
 class NavigationMesh {
     constructor(navigationNodes = [], startNodeId = 0) {
         this.nodes = navigationNodes
