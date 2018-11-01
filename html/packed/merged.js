@@ -403,7 +403,7 @@ function Input() {
 	//	TILDA:    192
 
 	var input = {
-		key: [200],
+		key: [],
 		mouseLeft: false,
 		mousePosition: [0, 0],
 		touches: [],
@@ -415,11 +415,14 @@ function Input() {
 					return true
 			}
 			return false
+		},
+		clearKeys: function () {
+			for(var i = 0; i < 200; i++) {
+				this.key[i] = false
+			}
 		}
 	}
-	for(var i = 0; i < 200; i++) {
-		input.key[i] = false
-	}
+	input.clearKeys()
 
 	function setKey(keyCode, value) {
 		input.key[keyCode] = value
@@ -1366,32 +1369,70 @@ function renderSelectLevelState() {
     // info
     canvas.fillStyle = '#FFFFFF'
     canvas.textAlign = "center"; // "start", "end", "center", "left", "right"
-    canvas.fillText("Level: " + levelId , width * 0.5, height * 0.25 - minSize * 0.17)
+    canvas.fillText("Level: " + (levelId + 1) , width * 0.5, height * 0.25 - minSize * 0.17)
     canvas.fillText("need apples: " + level.applesNeed , width * 0.5, height * 0.25 - minSize * 0.1)
     canvas.fillText("rocks on level: " + level.needRocks , width * 0.5, height * 0.25 - minSize * 0.03)
-    //canvas.fillText("<< to select level >>", width * 0.5, height * 0.5 + minSize * 0.4)
-    // canvas.fillText("space to start", width * 0.5, height * 0.5 + minSize * 0.45)
-    drawStartButton(width * 0.5, height - minSize * 0.1, minSize * 0.1)
+    drawEntranceIcon(width * 0.5, height - minSize * 0.1, minSize * 0.1)
     drawArrowLeft(minSize * 0.1, height - minSize * 0.1, minSize * 0.1)
     drawArrowRight(width - minSize * 0.1, height - minSize * 0.1, minSize * 0.1)
 }
 
-function drawStartButton(x, y, size) {
+function drawEntranceIcon(x, y, size) {
     canvas.fillStyle = '#FFFFFF33'
     canvas.strokeStyle = '#FFFFFF11'
+    
     canvas.beginPath()
-    canvas.arc(x, y, size * 0.60, 0.0, Math.PI * 2.0)
-    canvas.arc(x, y, size * 0.46, 0.0, Math.PI * 2.0, true)
+    canvas.arc(x + size * 0.2, y, size * 0.6, Math.PI * 0.75, Math.PI * 1.25, true)
+    canvas.arc(x + size * 0.2, y, size * 0.4, Math.PI * 1.25, Math.PI * 0.75)
     canvas.closePath()
     canvas.fill()
-    canvas.beginPath()
-    canvas.arc(x, y, size * 0.60, 0.0, Math.PI * 2.0)
-    canvas.closePath()
     canvas.stroke()
     canvas.beginPath()
-    canvas.moveTo(x + size * 0.36, y)
-    canvas.lineTo(x - size * 0.24, y + size * 0.28)
-    canvas.lineTo(x - size * 0.24, y - size * 0.28)
+    canvas.moveTo(x, y)
+    canvas.lineTo(x - size * 0.4, y + size * 0.4)
+    canvas.lineTo(x - size * 0.4, y + size * 0.12)
+    canvas.lineTo(x - size * 0.76, y + size * 0.12)
+    canvas.lineTo(x - size * 0.76, y - size * 0.12)
+    canvas.lineTo(x - size * 0.4, y - size * 0.12)
+    canvas.lineTo(x - size * 0.4, y - size * 0.4)
+    canvas.closePath()
+    canvas.fill()
+    canvas.stroke()
+}
+
+function drawExitIcon(x, y, size) {
+    canvas.fillStyle = '#FFFFFF33'
+    canvas.strokeStyle = '#FFFFFF11'
+
+    canvas.beginPath()
+    canvas.arc(x + size * 0.2, y, size * 0.5, Math.PI * 0.838, Math.PI * 1.162, true)
+    canvas.arc(x + size * 0.2, y, size * 0.3, Math.PI * 1.3, Math.PI * 0.7)
+    canvas.closePath()
+    canvas.fill()
+    canvas.stroke()
+    canvas.beginPath()
+    canvas.moveTo(x + size * 0.04 - size * 0.8, y)
+    canvas.lineTo(x + size * 0.04 - size * 0.4, y + size * 0.4)
+    canvas.lineTo(x + size * 0.04 - size * 0.4, y + size * 0.12)
+    canvas.lineTo(x + size * 0.04 - size * 0.04, y + size * 0.12)
+    canvas.lineTo(x + size * 0.04 - size * 0.04, y - size * 0.12)
+    canvas.lineTo(x + size * 0.04 - size * 0.4, y - size * 0.12)
+    canvas.lineTo(x + size * 0.04 - size * 0.4, y - size * 0.4)
+    canvas.closePath()
+    canvas.fill()
+    canvas.stroke()
+}
+
+function drawRestartIcon(x, y, size) {
+    canvas.fillStyle = '#FFFFFF33'
+    canvas.strokeStyle = '#FFFFFF11'
+    
+    canvas.beginPath()
+    canvas.arc(x, y, size * 0.6, Math.PI * 0.5, Math.PI * 0.2)
+    canvas.arc(x, y, size * 0.4, Math.PI * 0.2, Math.PI * 0.5, true)
+    canvas.lineTo(x, y + size * 0.3)
+    canvas.lineTo(x + size * 0.3, y + size * 0.5)
+    canvas.lineTo(x, y + size * 0.7)
     canvas.closePath()
     canvas.fill()
     canvas.stroke()
@@ -1427,14 +1468,26 @@ function drawArrowLeft(x, y, size) {
     canvas.stroke()
 }
 
+function drawMenuIcon(x, y, size) {
+    canvas.fillStyle = '#FFFFFF33'
+    canvas.strokeStyle = '#FFFFFF11'
+    canvas.rect(x - size * 0.5, y + size * 0.3, size, size * 0.2)
+    canvas.rect(x - size * 0.5, y - size * 0.1, size, size * 0.2)
+    canvas.rect(x - size * 0.5, y - size * 0.5, size, size * 0.2)
+    canvas.fill()
+    canvas.stroke()
+}
+
 function renderWinState() {
     camera.render()
     // info
     canvas.fillStyle = '#FFFFFF'
     canvas.textAlign = "center"; // "start", "end", "center", "left", "right"
     canvas.fillText("YOU WIN!", width * 0.5, height * 0.1)
-    canvas.fillText("space to next level", width * 0.5, height * 0.85)
-    canvas.fillText("esc to level selection", width * 0.5, height * 0.95)
+    //canvas.fillText("space to next level", width * 0.5, height * 0.85)
+    //canvas.fillText("esc to level selection", width * 0.5, height * 0.95)
+    drawExitIcon(minSize * 0.13, height - minSize * 0.1, minSize * 0.12)
+    drawArrowRight(width - minSize * 0.1, height - minSize * 0.1, minSize * 0.1)
 }
 
 function renderLoseState() {
@@ -1443,8 +1496,8 @@ function renderLoseState() {
     canvas.fillStyle = '#FFFFFF'
     canvas.textAlign = "center"; // "start", "end", "center", "left", "right"
     canvas.fillText("YOU LOSE!", width * 0.5, height * 0.1)
-    canvas.fillText("space to retry", width * 0.5, height * 0.85)
-    canvas.fillText("esc to level selection", width * 0.5, height * 0.95)
+    drawExitIcon(minSize * 0.13, height - minSize * 0.1, minSize * 0.12)
+    drawRestartIcon(width - minSize * 0.1, height - minSize * 0.1, minSize * 0.1)
 }
 
 function renderPauseState() {
@@ -1473,8 +1526,9 @@ function renderGameState() {
     canvas.fillText(level.applesCount + "/" + level.applesNeed, minSize * 0.15, minSize * 0.1)
     drawApple(minSize * 0.1, minSize * 0.1, minSize * 0.046)
     for(let i = 0; i < level.livesCount; i++) {
-        drawLiveHeart(width * 0.5 + (i - 1) * minSize * 0.05, height * 0.95, minSize * 0.05)
+        drawLiveHeart(width * 0.5 + (i - 1) * minSize * 0.05, height - minSize * 0.1, minSize * 0.05)
     }
+    drawMenuIcon(width - minSize * 0.1, minSize * 0.1, minSize * 0.08)
     drawArrowLeft(minSize * 0.1, height - minSize * 0.1, minSize * 0.1)
     drawArrowRight(width - minSize * 0.1, height - minSize * 0.1, minSize * 0.1)
 }
@@ -1623,7 +1677,25 @@ function updateWinState(dt) {
         changeLevelAnim = 1.0
         changeLevelDirection = 1.0
     }
-    if (input.isTouchRect(0, 0, width, height)) {
+    if (input.key[65] || input.key[37]) { // LEFT | A
+        input.key[65] = false
+        input.key[37] = false
+
+        levelId -= 1
+        setState(selectLevelState)
+    }
+    if (input.key[68] || input.key[39]) { // RIGHT | D
+        input.key[68] = false
+        input.key[39] = false
+
+        changeLevelAnim = 1.0
+        changeLevelDirection = 1.0
+    }
+    if (input.isTouchRect(0, height * 0.5, width * 0.3, height)) { // bottom left screen space touch
+        levelId -= 1
+        setState(selectLevelState)
+    }
+    if (input.isTouchRect(width * 0.7, 0, width, height)) { // top right screen space touch
         changeLevelAnim = 1.0
         changeLevelDirection = 1.0
     }
@@ -1660,7 +1732,20 @@ function updateLoseState(dt) {
         input.key[32] = false
         setState(startGameState)
     }
-    if (input.isTouchRect(0, 0, width, height)) {
+    if (input.key[65] || input.key[37]) { // LEFT | A
+        input.key[65] = false
+        input.key[37] = false
+        setState(selectLevelState)
+    }
+    if (input.key[68] || input.key[39]) { // RIGHT | D
+        input.key[68] = false
+        input.key[39] = false
+        setState(startGameState)
+    }
+    if (input.isTouchRect(0, height * 0.5, width * 0.3, height)) { // bottom left screen space touch
+        setState(selectLevelState)
+    }
+    if (input.isTouchRect(width * 0.7, 0, width, height)) { // top left screen space touch
         setState(selectLevelState)
     }
     level.update(dt)
@@ -1669,6 +1754,9 @@ function updateLoseState(dt) {
 function updatePauseState(dt) {
     if (input.key[27]) { // esc
         input.key[27] = false
+        setState(gameState)
+    }
+    if (input.isTouchRect(width * 0.7, 0, width, height * 0.3)) { // top right screen space touch
         setState(gameState)
     }
     if (input.key[81]) { // Q
@@ -1690,6 +1778,9 @@ function updateGameState(dt) {
     // space = 32
     if (input.key[27]) { // esc
         input.key[27] = false
+        setState(pauseState)
+    }
+    if (input.isTouchRect(width * 0.7, 0, width, height * 0.3)) { // top right screen space touch
         setState(pauseState)
     }
     let rotateAngle = 0
@@ -1742,6 +1833,7 @@ function getCameraRotation(position) {
 
 function setState(newState) {
     state = newState
+	input.clearKeys()
     switch(state) {
         default:
         case selectLevelState:
@@ -1792,11 +1884,12 @@ requestAnimationFrame(frame)
 function SetCanvasSize(width, height) {
     canvasElement.width = width
     canvasElement.height = height
+
+    camera.setSize(width, height)
+
     let fontSize = 32.0
     if (height > width) {
-        fontSize *= width / height
+        fontSize *= height / width
     }
     canvas.font = parseInt(fontSize) + "pt Arial"
-    camera.setSize(width, height)
 }
-
