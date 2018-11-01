@@ -1,26 +1,4 @@
-<html>
-	<head>
-		<title>Snake 3d game</title>
-		<style type="text/css">
-		body {
-			display: block;
-			background-color:0;
-			width: 100%;
-			height: 100%;
-			margin: 0;
-		}
-		canvas {
-			background-color:#000000;
-			display: block;
-			margin: 0px auto;
-		}
-		</style>
-	</head>
-	<body>
-		<canvas id="snake"></canvas>
-	</body>
-	<script type="text/javascript">
-	// Geometry functions
+// Geometry functions
 const MAX_NUMBER = Number.MAX_VALUE
 const MIN_NUMBER = Number.MIN_VALUE
 const PI = Math.PI
@@ -1821,5 +1799,4 @@ function SetCanvasSize(width, height) {
     canvas.font = parseInt(fontSize) + "pt Arial"
     camera.setSize(width, height)
 }
-	</script>
-</html>
+

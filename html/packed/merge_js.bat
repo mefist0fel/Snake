@@ -1,1 +1,1 @@
-copy ..\js\*.js merged.js
+copy ..\js\geometry.js + ..\js\input.js + ..\js\camera.js + ..\js\object3d.js + ..\js\level.js + ..\js\navigation_mesh.js + ..\js\navigation_node.js + ..\js\apple.js + ..\js\snake.js + ..\js\main.js merged.js
