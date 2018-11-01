@@ -4,7 +4,7 @@ class Camera {
         this.setSize(width, height)
         this.worldMatrix = CreateUnitMatrix3()
         this.projectionMatrix = CreateProjectionMatrix4(1.0, 1.0, 1.0, 2.0)
-        this.cameraPosition = CreateVector3(0.0, 0.0, 15.0)
+        this.cameraPosition = CreateVector3(0.0, 0.0, 20.0)
         this.position = CreateVector3()
         this.canvas = canvas
 

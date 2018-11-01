@@ -38,7 +38,6 @@ function timestamp() {
 function render() {
     // clear
     canvas.fillStyle = '#000011'
-    canvas.font = "16pt Arial"
     canvas.fillRect ( 0, 0, width, height)
     switch(state) {
         default:
@@ -63,9 +62,8 @@ function render() {
     }
     // debug
     if (needShowFPSInfo) {
-        canvas.fillText("FPS:", width - 120, 50)
         canvas.textAlign = "end";
-        canvas.fillText(parseInt(fps), width - 30, 50)
+        canvas.fillText("FPS: " + Math.round(fps), width - 30, 50)
     }
 }
 
@@ -74,11 +72,65 @@ function renderSelectLevelState() {
     // info
     canvas.fillStyle = '#FFFFFF'
     canvas.textAlign = "center"; // "start", "end", "center", "left", "right"
-    canvas.fillText("Level: " + levelId , width * 0.5, height * 0.5 - minSize * 0.46)
-    canvas.fillText("need apples: " + level.applesNeed , width * 0.5, height * 0.5 - minSize * 0.42)
-    canvas.fillText("rocks on level: " + level.needRocks , width * 0.5, height * 0.5 - minSize * 0.38)
-    canvas.fillText("<< to select level >>", width * 0.5, height * 0.5 + minSize * 0.4)
-    canvas.fillText("space to start", width * 0.5, height * 0.5 + minSize * 0.45)
+    canvas.fillText("Level: " + levelId , width * 0.5, height * 0.25 - minSize * 0.17)
+    canvas.fillText("need apples: " + level.applesNeed , width * 0.5, height * 0.25 - minSize * 0.1)
+    canvas.fillText("rocks on level: " + level.needRocks , width * 0.5, height * 0.25 - minSize * 0.03)
+    //canvas.fillText("<< to select level >>", width * 0.5, height * 0.5 + minSize * 0.4)
+    // canvas.fillText("space to start", width * 0.5, height * 0.5 + minSize * 0.45)
+    drawStartButton(width * 0.5, height - minSize * 0.1, minSize * 0.1)
+    drawArrowLeft(minSize * 0.1, height - minSize * 0.1, minSize * 0.1)
+    drawArrowRight(width - minSize * 0.1, height - minSize * 0.1, minSize * 0.1)
+}
+
+function drawStartButton(x, y, size) {
+    canvas.fillStyle = '#FFFFFF33'
+    canvas.strokeStyle = '#FFFFFF11'
+    canvas.beginPath()
+    canvas.arc(x, y, size * 0.60, 0.0, Math.PI * 2.0)
+    canvas.arc(x, y, size * 0.46, 0.0, Math.PI * 2.0, true)
+    canvas.closePath()
+    canvas.fill()
+    canvas.beginPath()
+    canvas.arc(x, y, size * 0.60, 0.0, Math.PI * 2.0)
+    canvas.closePath()
+    canvas.stroke()
+    canvas.beginPath()
+    canvas.moveTo(x + size * 0.36, y)
+    canvas.lineTo(x - size * 0.24, y + size * 0.28)
+    canvas.lineTo(x - size * 0.24, y - size * 0.28)
+    canvas.closePath()
+    canvas.fill()
+    canvas.stroke()
+}
+
+function drawArrowRight(x, y, size) {
+    canvas.fillStyle = '#FFFFFF33'
+    canvas.strokeStyle = '#FFFFFF11'
+    canvas.beginPath()
+    canvas.moveTo(x + size * 0.5, y)
+    canvas.lineTo(x, y + size * 0.5)
+    canvas.lineTo(x - size * 0.5, y + size * 0.5)
+    canvas.lineTo(x, y)
+    canvas.lineTo(x - size * 0.5, y - size * 0.5)
+    canvas.lineTo(x, y - size * 0.5)
+    canvas.closePath()
+    canvas.fill()
+    canvas.stroke()
+}
+
+function drawArrowLeft(x, y, size) {
+    canvas.fillStyle = '#FFFFFF33'
+    canvas.strokeStyle = '#FFFFFF11'
+    canvas.beginPath()
+    canvas.moveTo(x - size * 0.5, y)
+    canvas.lineTo(x, y + size * 0.5)
+    canvas.lineTo(x + size * 0.5, y + size * 0.5)
+    canvas.lineTo(x, y)
+    canvas.lineTo(x + size * 0.5, y - size * 0.5)
+    canvas.lineTo(x, y - size * 0.5)
+    canvas.closePath()
+    canvas.fill()
+    canvas.stroke()
 }
 
 function renderWinState() {
@@ -86,9 +138,9 @@ function renderWinState() {
     // info
     canvas.fillStyle = '#FFFFFF'
     canvas.textAlign = "center"; // "start", "end", "center", "left", "right"
-    canvas.fillText("YOU WIN!", width * 0.5, height * 0.5 - minSize * 0.4)
-    canvas.fillText("space to next level", width * 0.5, height * 0.5 + minSize * 0.4)
-    canvas.fillText("esc to level selection", width * 0.5, height * 0.5 + minSize * 0.45)
+    canvas.fillText("YOU WIN!", width * 0.5, height * 0.1)
+    canvas.fillText("space to next level", width * 0.5, height * 0.85)
+    canvas.fillText("esc to level selection", width * 0.5, height * 0.95)
 }
 
 function renderLoseState() {
@@ -96,9 +148,9 @@ function renderLoseState() {
     // info
     canvas.fillStyle = '#FFFFFF'
     canvas.textAlign = "center"; // "start", "end", "center", "left", "right"
-    canvas.fillText("YOU LOSE!", width * 0.5, height * 0.5 - minSize * 0.4)
-    canvas.fillText("space to retry", width * 0.5, height * 0.5 + minSize * 0.4)
-    canvas.fillText("esc to level selection", width * 0.5, height * 0.5 + minSize * 0.45)
+    canvas.fillText("YOU LOSE!", width * 0.5, height * 0.1)
+    canvas.fillText("space to retry", width * 0.5, height * 0.85)
+    canvas.fillText("esc to level selection", width * 0.5, height * 0.95)
 }
 
 function renderPauseState() {
@@ -123,8 +175,32 @@ function renderGameState() {
     // info
     canvas.fillStyle = '#FFFFFF'  // white
     canvas.textAlign = "start"; // "end", "center", "left", "right"
-    canvas.fillText("Apples: " + level.applesCount + "/" + level.applesNeed, width * 0.5 - minSize * 0.5, height * 0.5 - minSize * 0.45)
-    canvas.fillText("lives: " + level.livesCount, width * 0.5 - minSize * 0.5, height * 0.5 - minSize * 0.4)
+    canvas.textBaseline = "middle"; // textBaseline = "top" || "hanging" || "middle" || "alphabetic" || "ideographic" || "bottom";
+    canvas.fillText(level.applesCount + "/" + level.applesNeed, minSize * 0.15, minSize * 0.1)
+    drawApple(minSize * 0.1, minSize * 0.1, minSize * 0.046)
+    for(let i = 0; i < level.livesCount; i++) {
+        drawLiveHeart(width * 0.5 + (i - 1) * minSize * 0.05, height * 0.95, minSize * 0.05)
+    }
+    drawArrowLeft(minSize * 0.1, height - minSize * 0.1, minSize * 0.1)
+    drawArrowRight(width - minSize * 0.1, height - minSize * 0.1, minSize * 0.1)
+}
+
+function drawLiveHeart(x, y, size = 10.0) {
+    canvas.fillStyle = '#FF0000'
+    canvas.beginPath()
+    canvas.moveTo(x, y + size * 0.5);
+    canvas.arc(x - size * 0.175, y, size * 0.25, Math.PI * 0.75, Math.PI * 1.75);
+    canvas.arc(x + size * 0.175, y, size * 0.25, Math.PI * 1.25, Math.PI * 2.25);
+    canvas.closePath()
+    canvas.fill()
+}
+
+function drawApple(x, y, size = 10.0) {
+    canvas.fillStyle = '#33FF33'
+    canvas.beginPath()
+    canvas.arc(x, y, size * 0.5, 0.0, Math.PI * 2.0);
+    canvas.closePath()
+    canvas.fill()
 }
 
 function update(dt) {
@@ -164,12 +240,12 @@ function updateSelectLevelState(dt) {
             changeLevelAnim = 0
         let anim = (changeLevelAnim - 0.5) * 2.0
         if (anim > 0) {
-            camera.cameraPosition = CreateVector3((1 - anim * anim) * 30.0 * changeLevelDirection, 0.0, 15.0)
+            camera.cameraPosition = CreateVector3((1 - anim * anim) * 30.0 * changeLevelDirection, 0.0, 20.0)
         } else {
             if (level.id != levelId) {
                 level.setLevel(levelId)
             }
-            camera.cameraPosition = CreateVector3((-1 + anim * anim) * 30.0 * changeLevelDirection, 0.0, 15.0)
+            camera.cameraPosition = CreateVector3((-1 + anim * anim) * 30.0 * changeLevelDirection, 0.0, 20.0)
         }
         return
     }
@@ -346,14 +422,10 @@ function updateGameState(dt) {
     }
 }
 
-function isTouchRect() {
-
-}
-
 function getCameraRotation(position) {
     let cameraVector = NormalizeVector3(position)
     let XZVector = NormalizeVector2([cameraVector[0], cameraVector[2]])
-    let YNVector = NormalizeVector2([cameraVector[1], Math.sqrt(cameraVector[0], cameraVector[2])])
+    // let YNVector = NormalizeVector2([cameraVector[1], Math.sqrt(cameraVector[0], cameraVector[2])])
     let baseAngle = Math.acos(XZVector[0]) / Math.PI * 180.0
     let upAngle = Math.acos(cameraVector[1]) / Math.PI * 180.0 - 90.0
     if (cameraVector[2] > 0) {
@@ -416,5 +488,11 @@ requestAnimationFrame(frame)
 function SetCanvasSize(width, height) {
     canvasElement.width = width
     canvasElement.height = height
+    let fontSize = 32.0
+    if (height > width) {
+        fontSize *= width / height
+    }
+    canvas.font = parseInt(fontSize) + "pt Arial"
+    console.log(parseInt(fontSize) + "pt Arial")
     camera.setSize(width, height)
 }
