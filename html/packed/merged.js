@@ -422,7 +422,7 @@ function Input() {
 		isTouchDownInRect: function (rectSX, rectSY, rectEX, rectEY) {
 			if (this.mouseLeftDown && inRect(this.mousePosition[0], this.mousePosition[1], rectSX, rectSY, rectEX, rectEY))
 				return true
-			for(let i = 0; i < this.touches.length; i++) {
+			for(let i = 0; i < this.touchesDown.length; i++) {
 				if (inRect(this.touchesDown[i][0], this.touchesDown[i][1], rectSX, rectSY, rectEX, rectEY))
 					return true
 			}
@@ -431,6 +431,7 @@ function Input() {
 		updateInput: function () {
 			this.mouseLeftDown = false
 			this.keyDown = clearKeys()
+			this.touchesDown = []
 		}
 	}
 
@@ -471,7 +472,7 @@ function Input() {
 	}
 
 	function onTouchStart(event) {
-		input.touches = createTouchList(event)
+		input.touchesDown = createTouchList(event)
 		onTouch(event)
 	}
 
@@ -708,14 +709,14 @@ class Level {
         }
 		for(let i = 0; i < this.apples.length; i++) {
 			if (DistanceVector3(this.navigationMesh.heroPosition, this.apples[i].position) < 1.0) {
-				this.apples[i].remove(this.navigationMesh.getRandomPosition())
+				this.apples[i].remove(this.getRandomPosision())
         		this.snake.lenght += 0.5
 				this.applesCount += 1
 			}
 		}
 		for(let i = 0; i < this.rocks.length; i++) {
 			if (DistanceVector3(this.navigationMesh.heroPosition, this.rocks[i].position) < 1.0) {
-				this.rocks[i].remove(this.navigationMesh.getRandomPosition())
+				this.rocks[i].remove(this.getRandomPosision())
         		this.snake.lenght -= 0.2
 				this.livesCount -= 1
 			}
@@ -725,6 +726,28 @@ class Level {
 				this.livesCount = 0
 			}
 		}
+    }
+    getRandomPosision() {
+        let randomPosition
+        do {
+            randomPosition = this.navigationMesh.getRandomPosition()
+            console.log(randomPosition)
+        } while (this.hasCollisions(randomPosition))
+        return randomPosition;
+    }
+
+    hasCollisions(position) {
+		for(let i = 0; i < this.apples.length; i++) {
+			if (DistanceVector3(position, this.apples[i].position) < 1.0) {
+				return true
+			}
+		}
+		for(let i = 0; i < this.rocks.length; i++) {
+			if (DistanceVector3(position, this.rocks[i].position) < 1.0) {
+				return true
+			}
+        }
+        return false
     }
 
     start() {
@@ -1531,9 +1554,17 @@ function renderPauseState() {
     // info
     canvas.fillStyle = '#FFFFFF'  // white
     canvas.textAlign = "center"; // "start", "end", "center", "left", "right"
-    canvas.fillText("PAUSE ", width * 0.5, height * 0.5 - minSize * 0.4)
-    canvas.fillText("Q to quit ", width * 0.5, height * 0.5 + minSize * 0.4)
-    canvas.fillText("Esc to continue ", width * 0.5, height * 0.5 + minSize * 0.45)
+    canvas.fillText("PAUSE", width * 0.5, height * 0.1)
+    canvas.textAlign = "start"; // "end", "center", "left", "right"
+    canvas.textBaseline = "middle"; // textBaseline = "top" || "hanging" || "middle" || "alphabetic" || "ideographic" || "bottom";
+    canvas.fillText(level.applesCount + "/" + level.applesNeed, minSize * 0.15, minSize * 0.1)
+    drawApple(minSize * 0.1, minSize * 0.1, minSize * 0.046)
+    for(let i = 0; i < level.livesCount; i++) {
+        drawLiveHeart(width * 0.5 + (i - 1) * minSize * 0.05, height - minSize * 0.1, minSize * 0.05)
+    }
+    drawMenuIcon(width - minSize * 0.1, minSize * 0.1, minSize * 0.08)
+    drawExitIcon(minSize * 0.13, height - minSize * 0.1, minSize * 0.12)
+    drawRestartIcon(width - minSize * 0.1, height - minSize * 0.1, minSize * 0.1)
 }
 
 function renderStartGameState() {
@@ -1637,14 +1668,14 @@ function updateSelectLevelState(dt) {
         changeLevelDirection = 1.0
         levelId += 1
     }
-    if (input.isTouchInRect(0, height * 0.5, width * 0.3, height)) {
+    if (input.isTouchDownInRect(0, height * 0.5, width * 0.3, height)) {
         if (levelId > 0) {
             changeLevelAnim = 1.0
             changeLevelDirection = -1.0
             levelId -= 1
         }
     }
-    if (input.isTouchInRect(width * 0.7, height * 0.5, width, height)) {
+    if (input.isTouchDownInRect(width * 0.7, height * 0.5, width, height)) {
         changeLevelAnim = 1.0
         changeLevelDirection = 1.0
         levelId += 1
@@ -1764,11 +1795,20 @@ function updatePauseState(dt) {
     if (input.keyDown[27]) { // esc
         setState(gameState)
     }
+    if (input.keyDown[65] || input.keyDown[37]) { // LEFT | A
+        setState(selectLevelState) // to level
+    }
+    if (input.keyDown[68] || input.keyDown[39]) { // RIGHT | D
+        setState(startGameState) // restart
+    }
     if (input.isTouchDownInRect(width * 0.7, 0, width, height * 0.3)) { // top right screen space touch
         setState(gameState)
     }
-    if (input.keyDown[81]) { // Q
-        setState(selectLevelState)
+    if (input.isTouchDownInRect(0, height * 0.5, width * 0.3, height)) { // bottom lef screen space touch
+        setState(selectLevelState) // to level
+    }
+    if (input.isTouchDownInRect(width * 0.7, height * 0.5, width, height)) { // bottom lef screen space touch
+        setState(startGameState) // restart
     }
 }
 
@@ -1796,10 +1836,10 @@ function updateGameState(dt) {
     if (input.keyPressed[68] || input.keyPressed[39]) { // RIGHT | D
         rotateAngle = -1.0
     }
-    if (input.isTouchInRect(0, 0, width * 0.5, height)) {
+    if (input.isTouchInRect(0, height * 0.5, width * 0.5, height)) {
         rotateAngle = 1.0 // left
     }
-    if (input.isTouchInRect(width * 0.5, 0, width, height)) {
+    if (input.isTouchInRect(width * 0.5, height * 0.5, width, height)) {
         rotateAngle = -1.0 // right
     }
     level.snake.rotate(rotateAngle)
@@ -1900,4 +1940,3 @@ function SetCanvasSize(width, height) {
     }
     canvas.font = parseInt(fontSize) + "pt Arial"
 }
-
