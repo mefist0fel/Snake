@@ -33,7 +33,7 @@ function Input() {
 		isTouchDownInRect: function (rectSX, rectSY, rectEX, rectEY) {
 			if (this.mouseLeftDown && inRect(this.mousePosition[0], this.mousePosition[1], rectSX, rectSY, rectEX, rectEY))
 				return true
-			for(let i = 0; i < this.touches.length; i++) {
+			for(let i = 0; i < this.touchesDown.length; i++) {
 				if (inRect(this.touchesDown[i][0], this.touchesDown[i][1], rectSX, rectSY, rectEX, rectEY))
 					return true
 			}
@@ -42,6 +42,7 @@ function Input() {
 		updateInput: function () {
 			this.mouseLeftDown = false
 			this.keyDown = clearKeys()
+			this.touchesDown = []
 		}
 	}
 
@@ -82,7 +83,7 @@ function Input() {
 	}
 
 	function onTouchStart(event) {
-		input.touches = createTouchList(event)
+		input.touchesDown = createTouchList(event)
 		onTouch(event)
 	}
 

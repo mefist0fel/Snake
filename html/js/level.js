@@ -64,14 +64,14 @@ class Level {
         }
 		for(let i = 0; i < this.apples.length; i++) {
 			if (DistanceVector3(this.navigationMesh.heroPosition, this.apples[i].position) < 1.0) {
-				this.apples[i].remove(this.navigationMesh.getRandomPosition())
+				this.apples[i].remove(this.getRandomPosision())
         		this.snake.lenght += 0.5
 				this.applesCount += 1
 			}
 		}
 		for(let i = 0; i < this.rocks.length; i++) {
 			if (DistanceVector3(this.navigationMesh.heroPosition, this.rocks[i].position) < 1.0) {
-				this.rocks[i].remove(this.navigationMesh.getRandomPosition())
+				this.rocks[i].remove(this.getRandomPosision())
         		this.snake.lenght -= 0.2
 				this.livesCount -= 1
 			}
@@ -81,6 +81,28 @@ class Level {
 				this.livesCount = 0
 			}
 		}
+    }
+    getRandomPosision() {
+        let randomPosition
+        do {
+            randomPosition = this.navigationMesh.getRandomPosition()
+            console.log(randomPosition)
+        } while (this.hasCollisions(randomPosition))
+        return randomPosition;
+    }
+
+    hasCollisions(position) {
+		for(let i = 0; i < this.apples.length; i++) {
+			if (DistanceVector3(position, this.apples[i].position) < 1.0) {
+				return true
+			}
+		}
+		for(let i = 0; i < this.rocks.length; i++) {
+			if (DistanceVector3(position, this.rocks[i].position) < 1.0) {
+				return true
+			}
+        }
+        return false
     }
 
     start() {
