@@ -267,18 +267,17 @@ function update(dt) {
         case pauseState:
             updatePauseState(dt)
             break
-        case gameState:
-            updateGameState(dt)
-            break
         case winState:
             updateWinState(dt)
             break
         case loseState:
             updateLoseState(dt)
             break
+        case gameState:
+            updateGameState(dt)
+            break
     }
-    if (input.key[115]) { // F4
-        input.key[115] = false
+    if (input.keyDown[115]) { // F4
         needShowFPSInfo = !needShowFPSInfo
         console.log(Camera.instance.objects.length)
     }
@@ -301,35 +300,34 @@ function updateSelectLevelState(dt) {
         }
         return
     }
-    if (input.key[32]) { // space
-        input.key[32] = false
+    if (input.keyDown[32]) { // space
         setState(startGameState)
     }
-    if (input.key[65] || input.key[37]) { // LEFT | A
+    if (input.keyPressed[65] || input.keyPressed[37]) { // LEFT | A
         if (levelId > 0) {
             changeLevelAnim = 1.0
             changeLevelDirection = -1.0
             levelId -= 1
         }
     }
-    if (input.key[68] || input.key[39]) { // RIGHT | D
+    if (input.keyPressed[68] || input.keyPressed[39]) { // RIGHT | D
         changeLevelAnim = 1.0
         changeLevelDirection = 1.0
         levelId += 1
     }
-    if (input.isTouchRect(0, height * 0.5, width * 0.3, height)) {
+    if (input.isTouchInRect(0, height * 0.5, width * 0.3, height)) {
         if (levelId > 0) {
             changeLevelAnim = 1.0
             changeLevelDirection = -1.0
             levelId -= 1
         }
     }
-    if (input.isTouchRect(width * 0.7, height * 0.5, width, height)) {
+    if (input.isTouchInRect(width * 0.7, height * 0.5, width, height)) {
         changeLevelAnim = 1.0
         changeLevelDirection = 1.0
         levelId += 1
     }
-    if (input.isTouchRect(width * 0.4, height * 0.5, width * 0.6, height)) {
+    if (input.isTouchDownInRect(width * 0.4, height * 0.5, width * 0.6, height)) {
         setState(startGameState)
     }
     level.update(dt)
@@ -342,8 +340,7 @@ function updateSelectLevelState(dt) {
     camera.worldMatrix = currentMatrix
     camera.position = MultiplyVector3(camera.position, 1.0 - 1.0 * dt)
 
-    if (input.key[113]) { // F2
-        input.key[113] = false
+    if (input.keyDown[113]) { // F2
         needShowDebugInfo = !needShowDebugInfo
         level.showDebugInfo(needShowDebugInfo)
     }
@@ -371,35 +368,27 @@ function updateWinState(dt) {
         setState(startGameState)
         return
     }
-    if (input.key[27]) { // esc
-        input.key[27] = false
+    if (input.keyDown[27]) { // esc
         levelId -= 1
         setState(selectLevelState)
     }
-    if (input.key[32]) { // space
-        input.key[32] = false
+    if (input.keyDown[32]) { // space
         changeLevelAnim = 1.0
         changeLevelDirection = 1.0
     }
-    if (input.key[65] || input.key[37]) { // LEFT | A
-        input.key[65] = false
-        input.key[37] = false
-
+    if (input.keyDown[65] || input.keyDown[37]) { // LEFT | A
         levelId -= 1
         setState(selectLevelState)
     }
-    if (input.key[68] || input.key[39]) { // RIGHT | D
-        input.key[68] = false
-        input.key[39] = false
-
+    if (input.keyDown[68] || input.keyDown[39]) { // RIGHT | D
         changeLevelAnim = 1.0
         changeLevelDirection = 1.0
     }
-    if (input.isTouchRect(0, height * 0.5, width * 0.3, height)) { // bottom left screen space touch
+    if (input.isTouchDownInRect(0, height * 0.5, width * 0.3, height)) { // bottom left screen space touch
         levelId -= 1
         setState(selectLevelState)
     }
-    if (input.isTouchRect(width * 0.7, 0, width, height)) { // top right screen space touch
+    if (input.isTouchDownInRect(width * 0.7, 0, width, height)) { // top right screen space touch
         changeLevelAnim = 1.0
         changeLevelDirection = 1.0
     }
@@ -428,43 +417,35 @@ function updateStartGameState(dt) {
 }
 
 function updateLoseState(dt) {
-    if (input.key[27]) { // esc
-        input.key[27] = false
+    if (input.keyDown[27]) { // esc
         setState(selectLevelState)
     }
-    if (input.key[32]) { // space
-        input.key[32] = false
+    if (input.keyDown[32]) { // space
         setState(startGameState)
     }
-    if (input.key[65] || input.key[37]) { // LEFT | A
-        input.key[65] = false
-        input.key[37] = false
+    if (input.keyDown[65] || input.keyDown[37]) { // LEFT | A
         setState(selectLevelState)
     }
-    if (input.key[68] || input.key[39]) { // RIGHT | D
-        input.key[68] = false
-        input.key[39] = false
+    if (input.keyDown[68] || input.keyDown[39]) { // RIGHT | D
         setState(startGameState)
     }
-    if (input.isTouchRect(0, height * 0.5, width * 0.3, height)) { // bottom left screen space touch
+    if (input.isTouchDownInRect(0, height * 0.5, width * 0.3, height)) { // bottom left screen space touch
         setState(selectLevelState)
     }
-    if (input.isTouchRect(width * 0.7, 0, width, height)) { // top left screen space touch
+    if (input.isTouchDownInRect(width * 0.7, 0, width, height)) { // top left screen space touch
         setState(selectLevelState)
     }
     level.update(dt)
 }
 
 function updatePauseState(dt) {
-    if (input.key[27]) { // esc
-        input.key[27] = false
+    if (input.keyDown[27]) { // esc
         setState(gameState)
     }
-    if (input.isTouchRect(width * 0.7, 0, width, height * 0.3)) { // top right screen space touch
+    if (input.isTouchDownInRect(width * 0.7, 0, width, height * 0.3)) { // top right screen space touch
         setState(gameState)
     }
-    if (input.key[81]) { // Q
-        input.key[81] = false
+    if (input.keyDown[81]) { // Q
         setState(selectLevelState)
     }
 }
@@ -480,24 +461,23 @@ function updateGameState(dt) {
     // A = 65
     // D = 68
     // space = 32
-    if (input.key[27]) { // esc
-        input.key[27] = false
+    if (input.keyDown[27]) { // esc
         setState(pauseState)
     }
-    if (input.isTouchRect(width * 0.7, 0, width, height * 0.3)) { // top right screen space touch
+    if (input.isTouchDownInRect(width * 0.7, 0, width, height * 0.3)) { // top right screen space touch
         setState(pauseState)
     }
     let rotateAngle = 0
-    if (input.key[65] || input.key[37]) { // LEFT | A
+    if (input.keyPressed[65] || input.keyPressed[37]) { // LEFT | A
         rotateAngle = 1.0
     }
-    if (input.key[68] || input.key[39]) { // RIGHT | D
+    if (input.keyPressed[68] || input.keyPressed[39]) { // RIGHT | D
         rotateAngle = -1.0
     }
-    if (input.isTouchRect(0, 0, width * 0.5, height)) {
+    if (input.isTouchInRect(0, 0, width * 0.5, height)) {
         rotateAngle = 1.0 // left
     }
-    if (input.isTouchRect(width * 0.5, 0, width, height)) {
+    if (input.isTouchInRect(width * 0.5, 0, width, height)) {
         rotateAngle = -1.0 // right
     }
     level.snake.rotate(rotateAngle)
@@ -508,8 +488,7 @@ function updateGameState(dt) {
     camera.position = level.snake.position
     let angles = getCameraRotation(level.snake.position)
     camera.worldMatrix = MultiplyMatrix3(CreateRotationMatrix3(CreateVector3(1.0), angles[0]), CreateRotationMatrix3(CreateVector3(0.0, 1.0), angles[1]))
-    if (input.key[113]) { // F2
-        input.key[113] = false
+    if (input.keyDown[113]) { // F2
         needShowDebugInfo = !needShowDebugInfo
         level.showDebugInfo(needShowDebugInfo)
     }
@@ -536,9 +515,7 @@ function getCameraRotation(position) {
 }
 
 function setState(newState) {
-    state = newState
-	input.clearKeys()
-    switch(state) {
+    switch(newState) {
         default:
         case selectLevelState:
             currentMatrix = camera.worldMatrix
@@ -550,10 +527,12 @@ function setState(newState) {
         case pauseState:
             break
         case gameState:
-            for(let i = 0; i < 30; i++) {
-                level.snake.update(1.0/30.0)
+            if (state != pauseState) {
+                for(let i = 0; i < 30; i++) {
+                    level.snake.update(1.0/30.0)
+                }
+                level.start()
             }
-            level.start()
             break
         case winState:
             level.hideLevelDetails()
@@ -563,6 +542,7 @@ function setState(newState) {
             level.hideLevelDetails()
             break
     }
+    state = newState
 }
 
 function frame() {
@@ -582,6 +562,7 @@ function frame() {
         minSize = Math.min(width, height)
         SetCanvasSize(width, height)
     }
+    input.updateInput()
 }
 requestAnimationFrame(frame)
 

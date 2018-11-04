@@ -14,11 +14,14 @@ function Input() {
 	//	TILDA:    192
 
 	var input = {
-		key: [],
+		keyPressed: clearKeys(),
+		keyDown: clearKeys(),
 		mouseLeft: false,
+		mouseLeftDown: false,
 		mousePosition: [0, 0],
 		touches: [],
-		isTouchRect: function (rectSX, rectSY, rectEX, rectEY) {
+		touchesDown: [],
+		isTouchInRect: function (rectSX, rectSY, rectEX, rectEY) {
 			if (this.mouseLeft && inRect(this.mousePosition[0], this.mousePosition[1], rectSX, rectSY, rectEX, rectEY))
 				return true
 			for(let i = 0; i < this.touches.length; i++) {
@@ -27,29 +30,42 @@ function Input() {
 			}
 			return false
 		},
-		clearKeys: function () {
-			for(var i = 0; i < 200; i++) {
-				this.key[i] = false
+		isTouchDownInRect: function (rectSX, rectSY, rectEX, rectEY) {
+			if (this.mouseLeftDown && inRect(this.mousePosition[0], this.mousePosition[1], rectSX, rectSY, rectEX, rectEY))
+				return true
+			for(let i = 0; i < this.touches.length; i++) {
+				if (inRect(this.touchesDown[i][0], this.touchesDown[i][1], rectSX, rectSY, rectEX, rectEY))
+					return true
 			}
+			return false
+		},
+		updateInput: function () {
+			this.mouseLeftDown = false
+			this.keyDown = clearKeys()
 		}
 	}
-	input.clearKeys()
 
-	function setKey(keyCode, value) {
-		input.key[keyCode] = value
+	function clearKeys(count = 200) {
+		let keys = []
+		for(var i = 0; i < 200; i++) {
+			keys[i] = false
+		}
+		return keys
 	}
 
 	function onKeyDown(event) {
-		setKey(event.keyCode, true)
+		input.keyDown[event.keyCode] = true
+		input.keyPressed[event.keyCode] = true
 	}
 	function onKeyUp(event) {
-		setKey(event.keyCode, false)
+		input.keyPressed[event.keyCode] = false
 	}
 
-	function onClick(event) {}
+	// function onClick(event) {}
 
 	function mouseDown(event) {
 		input.mouseLeft = true
+		input.mouseLeftDown = true
 		input.mousePosition[0] = event.clientX
 		input.mousePosition[1] = event.clientY
 	}
@@ -65,25 +81,35 @@ function Input() {
 		input.mousePosition[1] = event.clientY
 	}
 
+	function onTouchStart(event) {
+		input.touches = createTouchList(event)
+		onTouch(event)
+	}
+
 	function onTouch(event) {
-		input.touches = []
-		for(let i = 0; i < event.touches.length; i++) {
-			input.touches.push([event.touches[i].clientX, event.touches[i].clientY])
-		}
+		input.touches = createTouchList(event)
 		event.preventDefault()
+	}
+
+	function createTouchList(event) {
+		let touches = []
+		for(let i = 0; i < event.touches.length; i++) {
+			touches.push([event.touches[i].clientX, event.touches[i].clientY])
+		}
+		return touches
 	}
 
 	function addListener(type, callback) {
 		document.addEventListener(type, callback, {passive: false})
 	}
 
-	addListener('keydown',		onKeyDown)
-	addListener('keyup',		onKeyUp)
-	addListener('click',		onClick)
+	// addListener('click',		onClick)
 	addListener('mousedown',	mouseDown)
 	addListener('mouseup',		mouseUp)
 	addListener('mousemove',	mouseMove)
-	addListener('touchstart',	onTouch)
+	addListener('keydown',		onKeyDown)
+	addListener('keyup',		onKeyUp)
+	addListener('touchstart',	onTouchStart)
 	addListener('touchmove',	onTouch)
 	addListener("touchend",		onTouch);
 	addListener("touchcancel",	onTouch);
