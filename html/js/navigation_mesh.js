@@ -36,28 +36,28 @@ class NavigationMesh {
         let position = AddVector3(this.heroPosition, MultiplyVector3(this.heroVector, distance))
         if (this.currentNode.IsOutABEdge(position)) {
             if (this.currentNode.edgeNeigbhorAB != null) {
-                this.moveTo(this.currentNode.edgeNeigbhorAB, this.currentNode.pointA, this.currentNode.pointB)
+                this.moveTo(this.currentNode.edgeNeigbhorAB, this.currentNode.pointA, this.currentNode.unitEdgeVectorAB, this.currentNode.unitEdgeNormalAB)
             }
             return
         }
         if (this.currentNode.IsOutBCEdge(position)) {
             if (this.currentNode.edgeNeigbhorBC != null) {
-                this.moveTo(this.currentNode.edgeNeigbhorBC, this.currentNode.pointB, this.currentNode.pointC)
+                this.moveTo(this.currentNode.edgeNeigbhorBC, this.currentNode.pointB, this.currentNode.unitEdgeVectorBC, this.currentNode.unitEdgeNormalBC)
             }
             return
         }
         if (this.currentNode.IsOutCAEdge(position)) {
             if (this.currentNode.edgeNeigbhorCA != null) {
-                this.moveTo(this.currentNode.edgeNeigbhorCA, this.currentNode.pointC, this.currentNode.pointA)
+                this.moveTo(this.currentNode.edgeNeigbhorCA, this.currentNode.pointC, this.currentNode.unitEdgeVectorCA, this.currentNode.unitEdgeNormalCD)
             }
             return
         }
         this.heroPosition = position
     }
 
-    moveTo(node, edgePointA, edgePointB) {
-        let newHeroPosition = this.FindPositionOnDifferentNode(this.currentNode, node, this.heroPosition, edgePointA, edgePointB)
-        let newHeroDirectionInWorldSpace = this.FindPositionOnDifferentNode(this.currentNode, node, AddVector3(this.heroPosition, this.heroVector), edgePointA, edgePointB)
+    moveTo(node, edgePointA, unitEdgeVector, unitEdgeNormal) {
+        let newHeroPosition = this.FindPositionOnDifferentNode(this.currentNode, node, this.heroPosition, edgePointA, unitEdgeVector, unitEdgeNormal)
+        let newHeroDirectionInWorldSpace = this.FindPositionOnDifferentNode(this.currentNode, node, AddVector3(this.heroPosition, this.heroVector), edgePointA, unitEdgeVector, unitEdgeNormal)
         let newHeroVector = SubstractVector3(newHeroDirectionInWorldSpace, newHeroPosition)
         this.currentNode = node
         this.heroPosition = newHeroPosition
@@ -65,14 +65,18 @@ class NavigationMesh {
         this.heroNormal = this.currentNode.unitNormal
     }
 
-    FindPositionOnDifferentNode(currentNode, newNode, position, edgePointA, edgePointB) {
+    FindPositionOnDifferentNode(currentNode, newNode, position, edgePointA, unitEdgeVector, unitEdgeNormal) {
         let vectorToEdge = SubstractVector3(position, edgePointA)
-        let unitEdgeVector = NormalizeVector3(SubstractVector3(edgePointB, edgePointA))
         let distanceFromEdgeStart = DotProductVector3(unitEdgeVector, vectorToEdge)
-        let currentNodeUnitEdgeNormal = CrossProductVector3(currentNode.unitNormal, unitEdgeVector)
         let cnextNodeUnitEdgeNormal = CrossProductVector3(newNode.unitNormal, unitEdgeVector)
-        let distanceFromEdge = DotProductVector3(currentNodeUnitEdgeNormal, vectorToEdge)
-        return AddVector3(AddVector3(edgePointA, MultiplyVector3(unitEdgeVector, distanceFromEdgeStart)), MultiplyVector3(cnextNodeUnitEdgeNormal, distanceFromEdge))
+        let distanceFromEdge = DotProductVector3(unitEdgeNormal, vectorToEdge)
+        return [
+            edgePointA[0] + unitEdgeVector[0] * distanceFromEdgeStart + cnextNodeUnitEdgeNormal[0] * distanceFromEdge,
+            edgePointA[1] + unitEdgeVector[1] * distanceFromEdgeStart + cnextNodeUnitEdgeNormal[1] * distanceFromEdge,
+            edgePointA[2] + unitEdgeVector[2] * distanceFromEdgeStart + cnextNodeUnitEdgeNormal[2] * distanceFromEdge,
+        ]
+        // optimized
+        // return AddVector3(AddVector3(edgePointA, MultiplyVector3(unitEdgeVector, distanceFromEdgeStart)), MultiplyVector3(cnextNodeUnitEdgeNormal, distanceFromEdge))
     }
 
     rotateHeroDirection(angle = 0.0) {

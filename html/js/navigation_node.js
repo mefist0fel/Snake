@@ -7,6 +7,7 @@ class NavigationNode {
         this.pointA = vectorA
         this.pointB = vectorB
         this.pointC = vectorC
+
         this.points = [vectorA, vectorB, vectorC]
         let center = FindMiddlePoint([vectorA, vectorB, vectorC])
         this.center = center
@@ -34,6 +35,13 @@ class NavigationNode {
         this.edgeNeigbhorAB = null
         this.edgeNeigbhorBC = null
         this.edgeNeigbhorCA = null
+        // cached values for speedUp
+        this.unitEdgeVectorAB = NormalizeVector3(SubstractVector3(vectorB, vectorA))
+        this.unitEdgeVectorBC = NormalizeVector3(SubstractVector3(vectorC, vectorB))
+        this.unitEdgeVectorCA = NormalizeVector3(SubstractVector3(vectorA, vectorC))
+        this.unitEdgeNormalAB = CrossProductVector3(this.unitNormal, this.unitEdgeVectorAB)
+        this.unitEdgeNormalBC = CrossProductVector3(this.unitNormal, this.unitEdgeVectorBC)
+        this.unitEdgeNormalCD = CrossProductVector3(this.unitNormal, this.unitEdgeVectorCA)
     }
 
     TryAddNeigbhorNode(otherNode) {

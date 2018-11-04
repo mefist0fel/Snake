@@ -23,7 +23,7 @@ class Level {
                 break
             case 1:
                 createCube(8.0)
-                navigationTriangles = CreateNavigationCube(9.0)
+                navigationTriangles = CreateNavigationCube(8.0)
                 break
             case 2:
                 createCilynder()
@@ -197,38 +197,53 @@ function createCube(size = 10.0, segments = 11) {
     return objects
 }
 
-function CreateNavigationCube(size = 10.0, navigationRadius = 0.5, edgePolyCount = 3) {
-    let s = size * 0.5
-    let points = [
-        CreateVector3( s, s, s), // 0
-        CreateVector3( s,-s, s), // 1
-        CreateVector3(-s, s, s), // 2
-        CreateVector3(-s,-s, s), // 3
-        CreateVector3( s, s,-s), // 4
-        CreateVector3( s,-s,-s), // 5
-        CreateVector3(-s, s,-s), // 6
-        CreateVector3(-s,-s,-s)  // 7
+function CreateNavigationCube(size = 9.0, navigationRadius = 0.5) {
+    let sidesRotationMatrix = [
+        CreateMatrix3RotatedX(0.0),
+        CreateMatrix3RotatedX(90.0),
+        CreateMatrix3RotatedX(180.0),
+        CreateMatrix3RotatedX(270.0),
+        CreateMatrix3RotatedY(90.0),
+        CreateMatrix3RotatedY(270.0)
     ]
-    return pointsByIds(points, [
-        // up
-        [0, 2, 1],
-        [1, 2, 3],
-        // down
-        [4, 5, 6],
-        [5, 7, 6],
-        // left
-        [0, 6, 2],
-        [0, 4, 6],
-        // right
-        [1, 3, 7],
-        [1, 7, 5],
-        // forw
-        [0, 1, 5],
-        [0, 5, 4],
-        // backw
-        [2, 6, 7],
-        [2, 7, 3]
-    ])
+    let getShift = function(i) {
+        if (i >= 3) {
+            return (i - 3) * 0.5
+        } else {
+            return (2 - i) * -0.5
+        }
+    }
+    let getOffcet = function(i, s) {
+        if (i >= 3) {
+            return s
+        } else {
+            return -s
+        }
+    }
+    let id = function(i, j) {
+        return i + j * 6
+    }
+    let mesh = []
+    for(let sideId = 0; sideId < sidesRotationMatrix.length; sideId ++) {
+        let points = []
+        let point = null
+        for (let i = 0; i < 6; i++) {
+            for (let j = 0; j < 6; j++) {
+                point = NormalizeVector3(CreateVector3(getShift(i), getShift(j), 1.0))
+                point = MultiplyVector3(point, navigationRadius)
+                point = AddVector3(point, CreateVector3(getOffcet(i, size * 0.5), getOffcet(j, size * 0.5), size * 0.5))
+                points[id(i, j)] = MultiplyVector3ToMatrix3(point, sidesRotationMatrix[sideId])
+            }
+        }
+        for (let i = 0; i < 5; i++) {
+            for (let j = 0; j < 5; j++) {
+                mesh.push([points[id(i, j)], points[id(i + 1, j)], points[id(i + 1, j + 1)]])
+                mesh.push([points[id(i, j)], points[id(i + 1, j + 1)], points[id(i, j + 1)]])
+            }
+        }
+    }
+
+    return mesh
 }
 
 function pointsByIds(points, faceIds) {
@@ -386,24 +401,49 @@ function createCilynder(sides = 32, radius = 4.0, height = 7.0, heightSegments =
 }
 
 function createNavigationCilynder(sides = 16, radius = 4.0, height = 7.0, navigationRadius = 0.5) {
-    let navigationTriangles = []
+    let cilynderRotationPoints = [
+        [radius, height * 0.5 + navigationRadius],
+        [radius + navigationRadius * 0.5, height * 0.5 + navigationRadius * 0.85],
+        [radius + navigationRadius * 0.85, height * 0.5 + navigationRadius * 0.5],
+        [radius + navigationRadius, height * 0.5],
+        [radius + navigationRadius, - height * 0.5],
+        [radius + navigationRadius * 0.85, -height * 0.5 - navigationRadius * 0.5],
+        [radius + navigationRadius * 0.5, -height * 0.5 - navigationRadius * 0.85],
+        [radius, -height * 0.5 - navigationRadius]
+    ]
 	let radiusVectors = []
 	for (let i = 0; i <= sides; i++) {
 		let angle = 360.0 / sides * i
-		var sideVector = MultiplyVector3ToMatrix3(CreateVector3(radius + navigationRadius, 0, 0), CreateMatrix3RotatedY(angle))
+		var sideVector = MultiplyVector3ToMatrix3(CreateVector3(1.0, 0, 0), CreateMatrix3RotatedY(angle))
 		radiusVectors.push(sideVector)
 	}
 	let centerUpPoint = CreateVector3(0, height * 0.5 + navigationRadius, 0)
     let centerDownPoint = CreateVector3(0, -height * 0.5 - navigationRadius, 0)
+    let navigationTriangles = []
 	for (let i = 0; i < sides; i++) {
-		let upStart = AddVector3(centerUpPoint, radiusVectors[i])
-		let upEnd = AddVector3(centerUpPoint, radiusVectors[i + 1])
-		let downStart = AddVector3(centerDownPoint, radiusVectors[i])
-		let downEnd = AddVector3(centerDownPoint, radiusVectors[i + 1])
-		navigationTriangles.push([centerUpPoint, upStart, upEnd])
-        navigationTriangles.push([centerDownPoint, downEnd, downStart])
-        navigationTriangles.push([upStart, downEnd, upEnd])
-        navigationTriangles.push([upStart, downStart, downEnd])
+        let rotationStartPoints = []
+        let rotationEndPoints = []
+        for(let j = 0; j < cilynderRotationPoints.length; j ++) {
+            rotationStartPoints.push(
+                AddVector3(
+                    CreateVector3(0, cilynderRotationPoints[j][1]),
+                    MultiplyVector3(
+                        radiusVectors[i],
+                        cilynderRotationPoints[j][0])))
+                        rotationEndPoints.push(
+                AddVector3(
+                    CreateVector3(0, cilynderRotationPoints[j][1]),
+                    MultiplyVector3(
+                        radiusVectors[i + 1],
+                        cilynderRotationPoints[j][0])))
+        }
+        let eid = rotationStartPoints.length - 1
+		navigationTriangles.push([centerUpPoint, rotationStartPoints[0], rotationEndPoints[0]])
+        navigationTriangles.push([centerDownPoint, rotationEndPoints[eid], rotationStartPoints[eid]])
+        for(let j = 0; j < cilynderRotationPoints.length - 1; j ++) {
+            navigationTriangles.push([rotationStartPoints[j], rotationEndPoints[j + 1], rotationEndPoints[j]])
+            navigationTriangles.push([rotationStartPoints[j], rotationStartPoints[j + 1], rotationEndPoints[j + 1]])
+        }
     }
     return navigationTriangles
 }
