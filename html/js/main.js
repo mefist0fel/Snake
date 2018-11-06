@@ -595,3 +595,45 @@ function SetCanvasSize(width, height) {
     }
     canvas.font = parseInt(fontSize) + "pt Arial"
 }
+
+let arr = [
+    KeyValueTupe('a1', 0.0),
+    KeyValueTupe('a2', 2.0),
+    KeyValueTupe('a3', 3.0),
+    KeyValueTupe('a4', 4.0),
+    KeyValueTupe('a8', 8.0),
+    KeyValueTupe('a10', 10.0)
+]
+let id = binarySearch(arr, 1, (value, element) => { value - element.value })
+
+// console.log(id)
+// console.log(arr[Math.abs(id)])
+
+function binarySearch (list, value, compare_fn) {
+    // initial values for start, middle and end
+    let start = 0
+    let stop = list.length - 1
+    let middle = Math.floor((start + stop) / 2)
+  
+    // While the middle is not what we're looking for and the list does not have a single item
+    while (start < stop) {
+        let compare = compare_fn(value, list[middle])
+        if (compare > 0) {
+            stop = middle - 1
+        } else if (compare < 0) {
+            start = middle + 1
+        } else {
+            return middle
+        }
+  
+      middle = Math.floor((start + stop) / 2)
+    }
+    return -middle
+}
+
+function KeyValueTupe(key, value = 0.0) {
+    return {
+        key : key,
+        value: value
+    }
+}

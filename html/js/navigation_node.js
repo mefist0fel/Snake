@@ -31,6 +31,7 @@ class NavigationNode {
         this.edgePointCA = this.pointC
         this.edgeUnitCA = NormalizeVector3(vectorCA)
         this.edgeNormalCA = NormalizeVector3(CrossProductVector3(this.unitNormal, vectorCA))
+        this.area = this.GetArea(Vector3Length(vectorAB), Vector3Length(vectorBC), Vector3Length(vectorCA))
 
         this.edgeNeigbhorAB = null
         this.edgeNeigbhorBC = null
@@ -42,6 +43,12 @@ class NavigationNode {
         this.unitEdgeNormalAB = CrossProductVector3(this.unitNormal, this.unitEdgeVectorAB)
         this.unitEdgeNormalBC = CrossProductVector3(this.unitNormal, this.unitEdgeVectorBC)
         this.unitEdgeNormalCD = CrossProductVector3(this.unitNormal, this.unitEdgeVectorCA)
+    }
+
+    GetArea(ABLength, BCLength, CALength) {
+        // triangle area https://ru.wikipedia.org/wiki/%D0%A4%D0%BE%D1%80%D0%BC%D1%83%D0%BB%D0%B0_%D0%93%D0%B5%D1%80%D0%BE%D0%BD%D0%B0
+        let p = (ABLength + BCLength + CALength) * 0.5
+        return Math.sqrt(p * (p - ABLength) * (p - BCLength) * (p - CALength))
     }
 
     TryAddNeigbhorNode(otherNode) {

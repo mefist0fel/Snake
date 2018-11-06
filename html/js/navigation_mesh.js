@@ -9,6 +9,7 @@ class NavigationMesh {
         // find neigbhors
         for (let i = 0; i < navigationNodes.length; i++) {
             navigationNodes[i].name = i
+            // console.log(navigationNodes[i].area)
         }
         for (let i = 0; i < navigationNodes.length; i++) {
             for (let j = 0; j < navigationNodes.length; j++) {
