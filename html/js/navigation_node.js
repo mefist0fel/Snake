@@ -71,6 +71,18 @@ class NavigationNode {
         }
     }
     
+    GetRandomPosition() {
+        var x = Math.random()
+        var y = Math.random()
+        if (x + y > 1.0) {
+            x = 1.0 - x
+            y = 1.0 - y
+        }
+        let ab = SubstractVector3(this.pointB, this.pointA)
+        let ac = SubstractVector3(this.pointC, this.pointA)
+        return AddVector3(this.pointA, AddVector3(MultiplyVector3(ab, x), MultiplyVector3(ac, y)))
+    }
+
     isCommonEdge(aStart, aEnd, bStart, bEnd) {
         return (
             (IsEqualVector3(aStart, bStart) && IsEqualVector3(aEnd, bEnd)) ||

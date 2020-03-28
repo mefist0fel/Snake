@@ -6,6 +6,8 @@ class NavigationMesh {
         this.heroPosition = this.currentNode.center
         this.heroVector = this.currentNode.unitTangent
         this.heroNormal = this.currentNode.unitNormal
+        this.nodeAreas = []
+        this.fullMeshArea = this.findAreas(this.nodeAreas, this.nodes);
         // find neigbhors
         for (let i = 0; i < navigationNodes.length; i++) {
             navigationNodes[i].name = i
@@ -20,17 +22,27 @@ class NavigationMesh {
         }
     }
 
+    findAreas (nodeAreas, nodes) {
+        let fullArea = 0
+        for (let i = 0; i < nodes.length; i++) {
+            nodeAreas.push({
+                    node : nodes[i],
+                    value: fullArea
+                })
+            fullArea += nodes[i].area
+        }
+        return fullArea
+    }
+
     push (navigationTriangle) {
         this.triangles.push(navigationTriangle)
     }
 
     getRandomPosition () {
-        let randomNode = this.nodes[getRandomInt(0, this.nodes.length)]
-        return randomNode.center
-
-        function getRandomInt(min, max) {
-            return Math.floor(Math.random() * (max - min)) + min;
-        }
+        let randomDistributedArea = Math.random() * this.fullMeshArea
+        let randomNodeId = binarySearch(this.nodeAreas, randomDistributedArea, (fullArea, nodeArea) => (nodeArea.value - fullArea))
+        let randomNode = this.nodes[Math.abs(randomNodeId)]
+        return randomNode.GetRandomPosition()
     }
 
     moveHero(distance = 1.0) {
@@ -83,4 +95,23 @@ class NavigationMesh {
     rotateHeroDirection(angle = 0.0) {
         this.heroVector = NormalizeVector3(MultiplyVector3ToMatrix3(this.heroVector, CreateRotationMatrix3(this.currentNode.unitNormal, angle)))
     }
+}
+
+function binarySearch (list, value, compare_fn) {
+    let start = 0
+    let stop = list.length - 1
+    let middle = Math.floor((start + stop) / 2)
+  
+    while (start <= stop) {
+        let compare = compare_fn(value, list[middle])
+        if (compare > 0) {
+            stop = middle - 1
+        } else if (compare < 0) {
+            start = middle + 1
+        } else {
+            return middle
+        }
+        middle = Math.floor((start + stop) / 2)
+    }
+    return -middle
 }
