@@ -683,18 +683,22 @@ class Level {
         let navigationTriangles = null
         if (id == 0 || id % 3 == parseInt(id / 3) % 3)
             this.needRocks = 0
-        switch(id % 3) {
+        switch(id % 4) {
             case 0:
                 createSphere()
                 navigationTriangles = CreateNavigationSphere()
                 break
             case 1:
                 createCube(8.0)
-                navigationTriangles = CreateNavigationCube(9.0)
+                navigationTriangles = CreateNavigationCube(8.0)
                 break
             case 2:
                 createCilynder()
                 navigationTriangles = createNavigationCilynder()
+                break
+            case 3:
+                createTorus()
+                navigationTriangles = CreateNavigationTorus()
                 break
         }
         for(let i = 0; i < navigationTriangles.length; i++) {
@@ -731,14 +735,14 @@ class Level {
         }
 		for(let i = 0; i < this.apples.length; i++) {
 			if (DistanceVector3(this.navigationMesh.heroPosition, this.apples[i].position) < 1.0) {
-				this.apples[i].remove(this.getRandomPosision())
+				this.apples[i].remove(this.getRandomPosition())
         		this.snake.lenght += 0.5
 				this.applesCount += 1
 			}
 		}
 		for(let i = 0; i < this.rocks.length; i++) {
 			if (DistanceVector3(this.navigationMesh.heroPosition, this.rocks[i].position) < 1.0) {
-				this.rocks[i].remove(this.getRandomPosision())
+				this.rocks[i].remove(this.getRandomPosition())
         		this.snake.lenght -= 0.2
 				this.livesCount -= 1
 			}
@@ -749,11 +753,11 @@ class Level {
 			}
 		}
     }
-    getRandomPosision() {
+
+    getRandomPosition() {
         let randomPosition
         do {
             randomPosition = this.navigationMesh.getRandomPosition()
-            console.log(randomPosition)
         } while (this.hasCollisions(randomPosition))
         return randomPosition;
     }
@@ -864,38 +868,53 @@ function createCube(size = 10.0, segments = 11) {
     return objects
 }
 
-function CreateNavigationCube(size = 10.0, navigationRadius = 0.5, edgePolyCount = 3) {
-    let s = size * 0.5
-    let points = [
-        CreateVector3( s, s, s), // 0
-        CreateVector3( s,-s, s), // 1
-        CreateVector3(-s, s, s), // 2
-        CreateVector3(-s,-s, s), // 3
-        CreateVector3( s, s,-s), // 4
-        CreateVector3( s,-s,-s), // 5
-        CreateVector3(-s, s,-s), // 6
-        CreateVector3(-s,-s,-s)  // 7
+function CreateNavigationCube(size = 9.0, navigationRadius = 0.5) {
+    let sidesRotationMatrix = [
+        CreateMatrix3RotatedX(0.0),
+        CreateMatrix3RotatedX(90.0),
+        CreateMatrix3RotatedX(180.0),
+        CreateMatrix3RotatedX(270.0),
+        CreateMatrix3RotatedY(90.0),
+        CreateMatrix3RotatedY(270.0)
     ]
-    return pointsByIds(points, [
-        // up
-        [0, 2, 1],
-        [1, 2, 3],
-        // down
-        [4, 5, 6],
-        [5, 7, 6],
-        // left
-        [0, 6, 2],
-        [0, 4, 6],
-        // right
-        [1, 3, 7],
-        [1, 7, 5],
-        // forw
-        [0, 1, 5],
-        [0, 5, 4],
-        // backw
-        [2, 6, 7],
-        [2, 7, 3]
-    ])
+    let getShift = function(i) {
+        if (i >= 3) {
+            return (i - 3) * 0.5
+        } else {
+            return (2 - i) * -0.5
+        }
+    }
+    let getOffcet = function(i, s) {
+        if (i >= 3) {
+            return s
+        } else {
+            return -s
+        }
+    }
+    let id = function(i, j) {
+        return i + j * 6
+    }
+    let mesh = []
+    for(let sideId = 0; sideId < sidesRotationMatrix.length; sideId ++) {
+        let points = []
+        let point = null
+        for (let i = 0; i < 6; i++) {
+            for (let j = 0; j < 6; j++) {
+                point = NormalizeVector3(CreateVector3(getShift(i), getShift(j), 1.0))
+                point = MultiplyVector3(point, navigationRadius)
+                point = AddVector3(point, CreateVector3(getOffcet(i, size * 0.5), getOffcet(j, size * 0.5), size * 0.5))
+                points[id(i, j)] = MultiplyVector3ToMatrix3(point, sidesRotationMatrix[sideId])
+            }
+        }
+        for (let i = 0; i < 5; i++) {
+            for (let j = 0; j < 5; j++) {
+                mesh.push([points[id(i, j)], points[id(i + 1, j)], points[id(i + 1, j + 1)]])
+                mesh.push([points[id(i, j)], points[id(i + 1, j + 1)], points[id(i, j + 1)]])
+            }
+        }
+    }
+
+    return mesh
 }
 
 function pointsByIds(points, faceIds) {
@@ -1053,24 +1072,109 @@ function createCilynder(sides = 32, radius = 4.0, height = 7.0, heightSegments =
 }
 
 function createNavigationCilynder(sides = 16, radius = 4.0, height = 7.0, navigationRadius = 0.5) {
-    let navigationTriangles = []
+    let cilynderRotationPoints = [
+        [radius, height * 0.5 + navigationRadius],
+        [radius + navigationRadius * 0.5, height * 0.5 + navigationRadius * 0.85],
+        [radius + navigationRadius * 0.85, height * 0.5 + navigationRadius * 0.5],
+        [radius + navigationRadius, height * 0.5],
+        [radius + navigationRadius, - height * 0.5],
+        [radius + navigationRadius * 0.85, -height * 0.5 - navigationRadius * 0.5],
+        [radius + navigationRadius * 0.5, -height * 0.5 - navigationRadius * 0.85],
+        [radius, -height * 0.5 - navigationRadius]
+    ]
 	let radiusVectors = []
 	for (let i = 0; i <= sides; i++) {
 		let angle = 360.0 / sides * i
-		var sideVector = MultiplyVector3ToMatrix3(CreateVector3(radius + navigationRadius, 0, 0), CreateMatrix3RotatedY(angle))
+		var sideVector = MultiplyVector3ToMatrix3(CreateVector3(1.0, 0, 0), CreateMatrix3RotatedY(angle))
 		radiusVectors.push(sideVector)
 	}
 	let centerUpPoint = CreateVector3(0, height * 0.5 + navigationRadius, 0)
     let centerDownPoint = CreateVector3(0, -height * 0.5 - navigationRadius, 0)
+    let navigationTriangles = []
 	for (let i = 0; i < sides; i++) {
-		let upStart = AddVector3(centerUpPoint, radiusVectors[i])
-		let upEnd = AddVector3(centerUpPoint, radiusVectors[i + 1])
-		let downStart = AddVector3(centerDownPoint, radiusVectors[i])
-		let downEnd = AddVector3(centerDownPoint, radiusVectors[i + 1])
-		navigationTriangles.push([centerUpPoint, upStart, upEnd])
-        navigationTriangles.push([centerDownPoint, downEnd, downStart])
-        navigationTriangles.push([upStart, downEnd, upEnd])
-        navigationTriangles.push([upStart, downStart, downEnd])
+        let rotationStartPoints = []
+        let rotationEndPoints = []
+        for(let j = 0; j < cilynderRotationPoints.length; j ++) {
+            rotationStartPoints.push(
+                AddVector3(
+                    CreateVector3(0, cilynderRotationPoints[j][1]),
+                    MultiplyVector3(
+                        radiusVectors[i],
+                        cilynderRotationPoints[j][0])))
+                        rotationEndPoints.push(
+                AddVector3(
+                    CreateVector3(0, cilynderRotationPoints[j][1]),
+                    MultiplyVector3(
+                        radiusVectors[i + 1],
+                        cilynderRotationPoints[j][0])))
+        }
+        let eid = rotationStartPoints.length - 1
+		navigationTriangles.push([centerUpPoint, rotationStartPoints[0], rotationEndPoints[0]])
+        navigationTriangles.push([centerDownPoint, rotationEndPoints[eid], rotationStartPoints[eid]])
+        for(let j = 0; j < cilynderRotationPoints.length - 1; j ++) {
+            navigationTriangles.push([rotationStartPoints[j], rotationEndPoints[j + 1], rotationEndPoints[j]])
+            navigationTriangles.push([rotationStartPoints[j], rotationStartPoints[j + 1], rotationEndPoints[j + 1]])
+        }
+    }
+    return navigationTriangles
+}
+
+
+function createTorus(mainRadius = 5.0, radius = 2.0, segments = 46, radiusSegment = 16) {
+    let objects = []
+	let radiusVectors = []
+	for (let i = 0; i <= segments; i++) {
+        let angle = 360.0 / segments * i
+        let bigRadiusMatrix = CreateMatrix3RotatedY(angle)
+        let radiusPoints = []
+        for (let j = 0; j <= radiusSegment; j++) {
+            let angleSmall = 360.0 / radiusSegment * j
+            var sideVector = MultiplyVector3ToMatrix3(
+                AddVector3(MultiplyVector3ToMatrix3(CreateVector3(radius, 0, 0), CreateMatrix3RotatedZ(angleSmall)), CreateVector3(mainRadius, 0, 0)),
+                bigRadiusMatrix)
+                radiusPoints.push(sideVector)
+        }
+        radiusVectors.push(radiusPoints);
+    }
+    let radSize = 1.0 / radiusSegment
+	for (let i = 0; i < segments; i++) {
+        for (let j = 0; j < radiusSegment; j++) {
+            let colorShift = parseInt(Math.abs(j - radiusSegment * 0.5) * radSize * 30)
+            let color = rgbToHex(195 + colorShift, 195 + colorShift, 195 + colorShift)
+            if ((i + j) % 2 == 1)
+                color = rgbToHex(255 - colorShift, 255 - colorShift, 255 - colorShift)
+            let upperStart = radiusVectors[i][j]
+            let upperEnd = radiusVectors[i][j + 1]
+            let downerStart = radiusVectors[i + 1][j]
+            let downerEnd = radiusVectors[i + 1][j + 1]
+            objects.push(new Object3DTriangle(upperStart, downerEnd, upperEnd, color))
+            objects.push(new Object3DTriangle(upperStart, downerStart, downerEnd, color))
+        }
+    }
+    return objects
+}
+
+function CreateNavigationTorus(mainRadius = 5.0, radius = 2.0, segments = 46, radiusSegment = 16, navigationRadius = 0.5) {
+    let navigationTriangles = []
+    let radiusVectors = []
+    for (let i = 0; i <= segments; i++) {
+        let angle = 360.0 / segments * i
+        let bigRadiusMatrix = CreateMatrix3RotatedY(angle)
+        let radiusPoints = []
+        for (let j = 0; j <= radiusSegment; j++) {
+            let angleSmall = 360.0 / radiusSegment * j
+            var sideVector = MultiplyVector3ToMatrix3(
+                AddVector3(MultiplyVector3ToMatrix3(CreateVector3(radius + navigationRadius, 0, 0), CreateMatrix3RotatedZ(angleSmall)), CreateVector3(mainRadius, 0, 0)),
+                bigRadiusMatrix)
+                radiusPoints.push(sideVector)
+        }
+        radiusVectors.push(radiusPoints);
+    }
+    for (let i = 0; i < segments; i++) {
+        for (let j = 0; j < radiusSegment; j++) {
+            navigationTriangles.push([radiusVectors[i][j], radiusVectors[i + 1][j], radiusVectors[i + 1][j + 1]])
+            navigationTriangles.push([radiusVectors[i][j], radiusVectors[i + 1][j + 1], radiusVectors[i][j + 1]])
+        }
     }
     return navigationTriangles
 }
@@ -1112,9 +1216,12 @@ class NavigationMesh {
         this.heroPosition = this.currentNode.center
         this.heroVector = this.currentNode.unitTangent
         this.heroNormal = this.currentNode.unitNormal
+        this.nodeAreas = []
+        this.fullMeshArea = this.findAreas(this.nodeAreas, this.nodes);
         // find neigbhors
         for (let i = 0; i < navigationNodes.length; i++) {
             navigationNodes[i].name = i
+            // console.log(navigationNodes[i].area)
         }
         for (let i = 0; i < navigationNodes.length; i++) {
             for (let j = 0; j < navigationNodes.length; j++) {
@@ -1125,45 +1232,55 @@ class NavigationMesh {
         }
     }
 
+    findAreas (nodeAreas, nodes) {
+        let fullArea = 0
+        for (let i = 0; i < nodes.length; i++) {
+            nodeAreas.push({
+                    node : nodes[i],
+                    value: fullArea
+                })
+            fullArea += nodes[i].area
+        }
+        return fullArea
+    }
+
     push (navigationTriangle) {
         this.triangles.push(navigationTriangle)
     }
 
     getRandomPosition () {
-        let randomNode = this.nodes[getRandomInt(0, this.nodes.length)]
-        return randomNode.center
-
-        function getRandomInt(min, max) {
-            return Math.floor(Math.random() * (max - min)) + min;
-        }
+        let randomDistributedArea = Math.random() * this.fullMeshArea
+        let randomNodeId = binarySearch(this.nodeAreas, randomDistributedArea, (fullArea, nodeArea) => (nodeArea.value - fullArea))
+        let randomNode = this.nodes[Math.abs(randomNodeId)]
+        return randomNode.GetRandomPosition()
     }
 
     moveHero(distance = 1.0) {
         let position = AddVector3(this.heroPosition, MultiplyVector3(this.heroVector, distance))
         if (this.currentNode.IsOutABEdge(position)) {
             if (this.currentNode.edgeNeigbhorAB != null) {
-                this.moveTo(this.currentNode.edgeNeigbhorAB, this.currentNode.pointA, this.currentNode.pointB)
+                this.moveTo(this.currentNode.edgeNeigbhorAB, this.currentNode.pointA, this.currentNode.unitEdgeVectorAB, this.currentNode.unitEdgeNormalAB)
             }
             return
         }
         if (this.currentNode.IsOutBCEdge(position)) {
             if (this.currentNode.edgeNeigbhorBC != null) {
-                this.moveTo(this.currentNode.edgeNeigbhorBC, this.currentNode.pointB, this.currentNode.pointC)
+                this.moveTo(this.currentNode.edgeNeigbhorBC, this.currentNode.pointB, this.currentNode.unitEdgeVectorBC, this.currentNode.unitEdgeNormalBC)
             }
             return
         }
         if (this.currentNode.IsOutCAEdge(position)) {
             if (this.currentNode.edgeNeigbhorCA != null) {
-                this.moveTo(this.currentNode.edgeNeigbhorCA, this.currentNode.pointC, this.currentNode.pointA)
+                this.moveTo(this.currentNode.edgeNeigbhorCA, this.currentNode.pointC, this.currentNode.unitEdgeVectorCA, this.currentNode.unitEdgeNormalCD)
             }
             return
         }
         this.heroPosition = position
     }
 
-    moveTo(node, edgePointA, edgePointB) {
-        let newHeroPosition = this.FindPositionOnDifferentNode(this.currentNode, node, this.heroPosition, edgePointA, edgePointB)
-        let newHeroDirectionInWorldSpace = this.FindPositionOnDifferentNode(this.currentNode, node, AddVector3(this.heroPosition, this.heroVector), edgePointA, edgePointB)
+    moveTo(node, edgePointA, unitEdgeVector, unitEdgeNormal) {
+        let newHeroPosition = this.FindPositionOnDifferentNode(this.currentNode, node, this.heroPosition, edgePointA, unitEdgeVector, unitEdgeNormal)
+        let newHeroDirectionInWorldSpace = this.FindPositionOnDifferentNode(this.currentNode, node, AddVector3(this.heroPosition, this.heroVector), edgePointA, unitEdgeVector, unitEdgeNormal)
         let newHeroVector = SubstractVector3(newHeroDirectionInWorldSpace, newHeroPosition)
         this.currentNode = node
         this.heroPosition = newHeroPosition
@@ -1171,19 +1288,42 @@ class NavigationMesh {
         this.heroNormal = this.currentNode.unitNormal
     }
 
-    FindPositionOnDifferentNode(currentNode, newNode, position, edgePointA, edgePointB) {
+    FindPositionOnDifferentNode(currentNode, newNode, position, edgePointA, unitEdgeVector, unitEdgeNormal) {
         let vectorToEdge = SubstractVector3(position, edgePointA)
-        let unitEdgeVector = NormalizeVector3(SubstractVector3(edgePointB, edgePointA))
         let distanceFromEdgeStart = DotProductVector3(unitEdgeVector, vectorToEdge)
-        let currentNodeUnitEdgeNormal = CrossProductVector3(currentNode.unitNormal, unitEdgeVector)
         let cnextNodeUnitEdgeNormal = CrossProductVector3(newNode.unitNormal, unitEdgeVector)
-        let distanceFromEdge = DotProductVector3(currentNodeUnitEdgeNormal, vectorToEdge)
-        return AddVector3(AddVector3(edgePointA, MultiplyVector3(unitEdgeVector, distanceFromEdgeStart)), MultiplyVector3(cnextNodeUnitEdgeNormal, distanceFromEdge))
+        let distanceFromEdge = DotProductVector3(unitEdgeNormal, vectorToEdge)
+        return [
+            edgePointA[0] + unitEdgeVector[0] * distanceFromEdgeStart + cnextNodeUnitEdgeNormal[0] * distanceFromEdge,
+            edgePointA[1] + unitEdgeVector[1] * distanceFromEdgeStart + cnextNodeUnitEdgeNormal[1] * distanceFromEdge,
+            edgePointA[2] + unitEdgeVector[2] * distanceFromEdgeStart + cnextNodeUnitEdgeNormal[2] * distanceFromEdge,
+        ]
+        // optimized
+        // return AddVector3(AddVector3(edgePointA, MultiplyVector3(unitEdgeVector, distanceFromEdgeStart)), MultiplyVector3(cnextNodeUnitEdgeNormal, distanceFromEdge))
     }
 
     rotateHeroDirection(angle = 0.0) {
         this.heroVector = NormalizeVector3(MultiplyVector3ToMatrix3(this.heroVector, CreateRotationMatrix3(this.currentNode.unitNormal, angle)))
     }
+}
+
+function binarySearch (list, value, compare_fn) {
+    let start = 0
+    let stop = list.length - 1
+    let middle = Math.floor((start + stop) / 2)
+  
+    while (start <= stop) {
+        let compare = compare_fn(value, list[middle])
+        if (compare > 0) {
+            stop = middle - 1
+        } else if (compare < 0) {
+            start = middle + 1
+        } else {
+            return middle
+        }
+        middle = Math.floor((start + stop) / 2)
+    }
+    return -middle
 }// nav node - for nav class
 class NavigationNode {
     // https://mathinsight.org/distance_point_plane
@@ -1193,6 +1333,7 @@ class NavigationNode {
         this.pointA = vectorA
         this.pointB = vectorB
         this.pointC = vectorC
+
         this.points = [vectorA, vectorB, vectorC]
         let center = FindMiddlePoint([vectorA, vectorB, vectorC])
         this.center = center
@@ -1216,10 +1357,24 @@ class NavigationNode {
         this.edgePointCA = this.pointC
         this.edgeUnitCA = NormalizeVector3(vectorCA)
         this.edgeNormalCA = NormalizeVector3(CrossProductVector3(this.unitNormal, vectorCA))
+        this.area = this.GetArea(Vector3Length(vectorAB), Vector3Length(vectorBC), Vector3Length(vectorCA))
 
         this.edgeNeigbhorAB = null
         this.edgeNeigbhorBC = null
         this.edgeNeigbhorCA = null
+        // cached values for speedUp
+        this.unitEdgeVectorAB = NormalizeVector3(SubstractVector3(vectorB, vectorA))
+        this.unitEdgeVectorBC = NormalizeVector3(SubstractVector3(vectorC, vectorB))
+        this.unitEdgeVectorCA = NormalizeVector3(SubstractVector3(vectorA, vectorC))
+        this.unitEdgeNormalAB = CrossProductVector3(this.unitNormal, this.unitEdgeVectorAB)
+        this.unitEdgeNormalBC = CrossProductVector3(this.unitNormal, this.unitEdgeVectorBC)
+        this.unitEdgeNormalCD = CrossProductVector3(this.unitNormal, this.unitEdgeVectorCA)
+    }
+
+    GetArea(ABLength, BCLength, CALength) {
+        // triangle area https://ru.wikipedia.org/wiki/%D0%A4%D0%BE%D1%80%D0%BC%D1%83%D0%BB%D0%B0_%D0%93%D0%B5%D1%80%D0%BE%D0%BD%D0%B0
+        let p = (ABLength + BCLength + CALength) * 0.5
+        return Math.sqrt(p * (p - ABLength) * (p - BCLength) * (p - CALength))
     }
 
     TryAddNeigbhorNode(otherNode) {
@@ -1242,6 +1397,18 @@ class NavigationNode {
         }
     }
     
+    GetRandomPosition() {
+        var x = Math.random()
+        var y = Math.random()
+        if (x + y > 1.0) {
+            x = 1.0 - x
+            y = 1.0 - y
+        }
+        let ab = SubstractVector3(this.pointB, this.pointA)
+        let ac = SubstractVector3(this.pointC, this.pointA)
+        return AddVector3(this.pointA, AddVector3(MultiplyVector3(ab, x), MultiplyVector3(ac, y)))
+    }
+
     isCommonEdge(aStart, aEnd, bStart, bEnd) {
         return (
             (IsEqualVector3(aStart, bStart) && IsEqualVector3(aEnd, bEnd)) ||
@@ -1336,7 +1503,11 @@ class Snake {
 	update (dt) {
 		let moveSpeed = 7.0 * dt
         let rotationSpeed = this.rotationAngle * 140.0 * dt
-		this.navigationMesh.moveHero(moveSpeed)
+        let speed = moveSpeed * 0.25
+        this.navigationMesh.moveHero(speed)
+        this.navigationMesh.moveHero(speed)
+        this.navigationMesh.moveHero(speed)
+        this.navigationMesh.moveHero(speed)
         this.navigationMesh.rotateHeroDirection(rotationSpeed)
         this.position = this.navigationMesh.heroPosition
         this.heroView.position = this.navigationMesh.heroPosition
@@ -1948,6 +2119,7 @@ function frame() {
     }
     input.updateInput()
 }
+
 requestAnimationFrame(frame)
 
 function SetCanvasSize(width, height) {
