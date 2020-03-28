@@ -16,7 +16,7 @@ class Level {
         let navigationTriangles = null
         if (id == 0 || id % 3 == parseInt(id / 3) % 3)
             this.needRocks = 0
-        switch(id % 3) {
+        switch(id % 4) {
             case 0:
                 createSphere()
                 navigationTriangles = CreateNavigationSphere()
@@ -28,6 +28,10 @@ class Level {
             case 2:
                 createCilynder()
                 navigationTriangles = createNavigationCilynder()
+                break
+            case 3:
+                createTorus()
+                navigationTriangles = CreateNavigationTorus()
                 break
         }
         for(let i = 0; i < navigationTriangles.length; i++) {
@@ -443,6 +447,66 @@ function createNavigationCilynder(sides = 16, radius = 4.0, height = 7.0, naviga
         for(let j = 0; j < cilynderRotationPoints.length - 1; j ++) {
             navigationTriangles.push([rotationStartPoints[j], rotationEndPoints[j + 1], rotationEndPoints[j]])
             navigationTriangles.push([rotationStartPoints[j], rotationStartPoints[j + 1], rotationEndPoints[j + 1]])
+        }
+    }
+    return navigationTriangles
+}
+
+
+function createTorus(mainRadius = 5.0, radius = 2.0, segments = 46, radiusSegment = 16) {
+    let objects = []
+	let radiusVectors = []
+	for (let i = 0; i <= segments; i++) {
+        let angle = 360.0 / segments * i
+        let bigRadiusMatrix = CreateMatrix3RotatedY(angle)
+        let radiusPoints = []
+        for (let j = 0; j <= radiusSegment; j++) {
+            let angleSmall = 360.0 / radiusSegment * j
+            var sideVector = MultiplyVector3ToMatrix3(
+                AddVector3(MultiplyVector3ToMatrix3(CreateVector3(radius, 0, 0), CreateMatrix3RotatedZ(angleSmall)), CreateVector3(mainRadius, 0, 0)),
+                bigRadiusMatrix)
+                radiusPoints.push(sideVector)
+        }
+        radiusVectors.push(radiusPoints);
+    }
+    let radSize = 1.0 / radiusSegment
+	for (let i = 0; i < segments; i++) {
+        for (let j = 0; j < radiusSegment; j++) {
+            let colorShift = parseInt(Math.abs(j - radiusSegment * 0.5) * radSize * 30)
+            let color = rgbToHex(195 + colorShift, 195 + colorShift, 195 + colorShift)
+            if ((i + j) % 2 == 1)
+                color = rgbToHex(255 - colorShift, 255 - colorShift, 255 - colorShift)
+            let upperStart = radiusVectors[i][j]
+            let upperEnd = radiusVectors[i][j + 1]
+            let downerStart = radiusVectors[i + 1][j]
+            let downerEnd = radiusVectors[i + 1][j + 1]
+            objects.push(new Object3DTriangle(upperStart, downerEnd, upperEnd, color))
+            objects.push(new Object3DTriangle(upperStart, downerStart, downerEnd, color))
+        }
+    }
+    return objects
+}
+
+function CreateNavigationTorus(mainRadius = 5.0, radius = 2.0, segments = 46, radiusSegment = 16, navigationRadius = 0.5) {
+    let navigationTriangles = []
+    let radiusVectors = []
+    for (let i = 0; i <= segments; i++) {
+        let angle = 360.0 / segments * i
+        let bigRadiusMatrix = CreateMatrix3RotatedY(angle)
+        let radiusPoints = []
+        for (let j = 0; j <= radiusSegment; j++) {
+            let angleSmall = 360.0 / radiusSegment * j
+            var sideVector = MultiplyVector3ToMatrix3(
+                AddVector3(MultiplyVector3ToMatrix3(CreateVector3(radius + navigationRadius, 0, 0), CreateMatrix3RotatedZ(angleSmall)), CreateVector3(mainRadius, 0, 0)),
+                bigRadiusMatrix)
+                radiusPoints.push(sideVector)
+        }
+        radiusVectors.push(radiusPoints);
+    }
+    for (let i = 0; i < segments; i++) {
+        for (let j = 0; j < radiusSegment; j++) {
+            navigationTriangles.push([radiusVectors[i][j], radiusVectors[i + 1][j], radiusVectors[i + 1][j + 1]])
+            navigationTriangles.push([radiusVectors[i][j], radiusVectors[i + 1][j + 1], radiusVectors[i][j + 1]])
         }
     }
     return navigationTriangles
